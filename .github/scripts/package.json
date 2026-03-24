@@ -1,0 +1,8 @@
+{
+  "name": "chatcnd-github-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "node-appwrite": "^14.0.0"
+  }
+}

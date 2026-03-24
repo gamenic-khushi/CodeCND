@@ -1,0 +1,42 @@
+name: Sync GitHub Issues → Appwrite
+
+on:
+  issues:
+    types: [opened, edited, closed, reopened, deleted, labeled, unlabeled]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: .github/scripts
+
+      - name: Sync issue to Appwrite
+        run: node sync-issue.js
+        working-directory: .github/scripts
+        env:
+          APPWRITE_ENDPOINT:            ${{ secrets.APPWRITE_ENDPOINT }}
+          APPWRITE_PROJECT_ID:          ${{ secrets.APPWRITE_PROJECT_ID }}
+          APPWRITE_API_KEY:             ${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_DATABASE_ID:         ${{ secrets.APPWRITE_DATABASE_ID }}
+          APPWRITE_ISSUES_COLLECTION_ID: ${{ secrets.APPWRITE_ISSUES_COLLECTION_ID }}
+          ISSUE_ACTION:     ${{ github.event.action }}
+          ISSUE_NUMBER:     ${{ github.event.issue.number }}
+          ISSUE_TITLE:      ${{ github.event.issue.title }}
+          ISSUE_BODY:       ${{ github.event.issue.body }}
+          ISSUE_STATE:      ${{ github.event.issue.state }}
+          ISSUE_URL:        ${{ github.event.issue.html_url }}
+          ISSUE_AUTHOR:     ${{ github.event.issue.user.login }}
+          ISSUE_CREATED_AT: ${{ github.event.issue.created_at }}
+          ISSUE_UPDATED_AT: ${{ github.event.issue.updated_at }}
+          ISSUE_LABELS:     ${{ toJson(github.event.issue.labels.*.name) }}
