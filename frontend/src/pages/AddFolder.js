@@ -30,7 +30,7 @@ export default function AddFolder({ lang, t, products, onBack, onSave }) {
     <div className="add-folder-page">
       {/* Top row */}
       <div className="add-folder-toprow">
-        <button className="add-folder-back-btn" onClick={onBack}>{t.back}</button>
+        <button className="add-folder-back-btn" onClick={onBack}>  {t.back}</button>
         <span className="add-folder-title">{t.addFolder}</span>
       </div>
 

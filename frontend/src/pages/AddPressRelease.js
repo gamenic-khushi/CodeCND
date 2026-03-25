@@ -17,7 +17,7 @@ export default function AddPressRelease({
 
       {/* Header */}
       <div className="ac-header">
-        <button className="ac-back-btn" onClick={onBack}>{t.back}</button>
+        <button className="ac-back-btn" onClick={onBack}>  {t.back}</button>
         <span className="ac-title">{t.addPressRelease}</span>
       </div>
 

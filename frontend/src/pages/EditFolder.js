@@ -22,7 +22,7 @@ export default function EditFolder({ lang, t, folder, products, onBack, onUpdate
     <div className="page ec-page">
 
       <div className="ac-header">
-        <button className="ac-back-btn" onClick={onBack}>{t.back}</button>
+        <button className="ac-back-btn" onClick={onBack}>  {t.back}</button>
         <span className="ac-title">{t.editFolder}</span>
       </div>
 

@@ -28,7 +28,7 @@ export default function UploadFile({
   return (
     <div className="page upload-page">
       <div className="upload-header">
-        <button className="upload-back-btn" onClick={onBack}>{t.back}</button>
+        <button className="upload-back-btn" onClick={onBack}>  {t.back}</button>
       </div>
 
       <div className="upload-body">

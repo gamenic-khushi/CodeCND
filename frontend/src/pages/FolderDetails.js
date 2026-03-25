@@ -10,7 +10,7 @@ export default function FolderDetails({ lang, t, folder, onBack, onEdit }) {
     <div className="page cd-page">
 
       <div className="ac-header">
-        <button className="ac-back-btn" onClick={onBack}>{t.back}</button>
+        <button className="ac-back-btn" onClick={onBack}>  {t.back}</button>
         <span className="ac-title">{t.folderDetails}</span>
         <button className="cd-edit-btn" onClick={onEdit}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -47,7 +47,7 @@ export default function AddCompany({
 
       {/* Top header */}
       <div className="ac-header">
-        <button className="ac-back-btn" onClick={activeTab === 1 ? () => setActiveTab(0) : onBack}>{t.back}</button>
+        <button className="ac-back-btn" onClick={activeTab === 1 ? () => setActiveTab(0) : onBack}>  {t.back}</button>
         <span className="ac-title">{activeTab === 1 ? t.addPressRelease : t.addCompany}</span>
       </div>
 

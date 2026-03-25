@@ -30,7 +30,7 @@ export default function ViewFile({ lang, t, file, folder, onBack }) {
     <div className="page vf-page">
 
       <div className="ac-header">
-        <button className="ac-back-btn" onClick={onBack}>{t.back}</button>
+        <button className="ac-back-btn" onClick={onBack}>  {t.back}</button>
         <span className="ac-title">{t.viewFile}</span>
       </div>
 

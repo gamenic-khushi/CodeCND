@@ -34,7 +34,7 @@ export default function ProductDetails({ lang, t, product, onBack, onEdit }) {
 
       {/* Header */}
       <div className="ac-header">
-        <button className="ac-back-btn" onClick={onBack}>{t.back}</button>
+        <button className="ac-back-btn" onClick={onBack}>  {t.back}</button>
         <span className="ac-title">{t.productDetails}</span>
         <button className="cd-edit-btn" onClick={onEdit}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

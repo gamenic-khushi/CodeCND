@@ -692,7 +692,8 @@ export default function App() {
             const newJp = copies.length === 0 ? `${baseJp}${copySuffixJp}` : `${baseJp}${copySuffixJp} (${copies.length + 1})`;
             const nums = products.map(p => parseInt(p.id.replace('pr', '')) || 0);
             const newId = `pr${String(Math.max(0, ...nums) + 1).padStart(4, '0')}`;
-            const dupeProduct = { ...product, id: newId, en: newEn, jp: newJp };
+            const { _awid: _pa, ...productWithoutAwid } = product;
+            const dupeProduct = { ...productWithoutAwid, id: newId, en: newEn, jp: newJp };
             setProducts(prev => [dupeProduct, ...prev]);
             setToast(t.duplicated);
             setTimeout(() => setToast(null), 3000);
@@ -803,7 +804,8 @@ export default function App() {
             const newJp = copies.length === 0 ? `${baseJp}${copySuffixJp}` : `${baseJp}${copySuffixJp} (${copies.length + 1})`;
             const nums = folderRows.map(f => parseInt(f.id.replace('fo', '')) || 0);
             const newId = `fo${String(Math.max(0, ...nums) + 1).padStart(4, '0')}`;
-            const dupeFolder = { ...folder, id: newId, en: newEn, jp: newJp };
+            const { _awid: _fa, ...folderWithoutAwid } = folder;
+            const dupeFolder = { ...folderWithoutAwid, id: newId, en: newEn, jp: newJp };
             setFolderRows(prev => [dupeFolder, ...prev]);
             setToast(t.duplicated);
             setTimeout(() => setToast(null), 3000);
@@ -890,7 +892,8 @@ export default function App() {
             onDuplicateFile={(file) => {
               const nums = fileRows.map(f => parseInt((f.refId || '').replace('fa', '')) || 0);
               const newRefId = `fa${String(Math.max(0, ...nums) + 1).padStart(4, '0')}`;
-              const dupeFile = { ...file, id: Date.now(), refId: newRefId, en: file.en + ' Copy', jp: file.jp + ' のコピー' };
+              const { _awid, ...fileWithoutAwid } = file;
+              const dupeFile = { ...fileWithoutAwid, id: Date.now(), refId: newRefId, en: file.en + ' Copy', jp: file.jp + ' のコピー' };
               setFileRows(prev => [dupeFile, ...prev]);
               db.create('files', dupeFile)
                 .then(saved => setFileRows(prev => prev.map(f => f.refId === newRefId ? { ...f, _awid: saved._awid } : f)))

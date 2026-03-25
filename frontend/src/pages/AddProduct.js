@@ -63,7 +63,7 @@ export default function AddProduct({ lang, t, companies, onBack, onSave }) {
 
       {/* Header */}
       <div className="ac-header">
-        <button className="ac-back-btn" onClick={onBack}>{t.back}</button>
+        <button className="ac-back-btn" onClick={onBack}>  {t.back}</button>
         <span className="ac-title">{t.addProduct}</span>
       </div>
 

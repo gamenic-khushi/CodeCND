@@ -1,4 +1,4 @@
-import { Client, Databases, Account, ID, Query } from 'appwrite';
+import { Client, Databases, Account, Query } from 'appwrite';
 
 const DB  = process.env.REACT_APP_APPWRITE_DATABASE_ID;
 const COL = {
@@ -175,7 +175,9 @@ export const db = {
 
   create: async (col, data) => {
     const payload = toAppwrite(col, data);
-    const doc = await _databases.createDocument(DB, COL[col], ID.unique(), payload);
+    // Always start with a letter so Appwrite accepts the ID
+    const uid = () => 'id' + Date.now().toString(16) + Math.random().toString(16).slice(2, 10);
+    const doc = await _databases.createDocument(DB, COL[col], uid(), payload);
     return fromAppwrite(col, doc);
   },
 

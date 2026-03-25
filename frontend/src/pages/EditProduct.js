@@ -61,7 +61,7 @@ export default function EditProduct({ lang, t, product, companies, onBack, onUpd
 
       {/* Header */}
       <div className="ac-header">
-        <button className="ac-back-btn" onClick={onBack}>{t.back}</button>
+        <button className="ac-back-btn" onClick={onBack}>  {t.back}</button>
         <span className="ac-title">{t.editProduct}</span>
       </div>
 

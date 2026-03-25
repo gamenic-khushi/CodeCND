@@ -61,7 +61,7 @@ export default function EditCompany({ lang, t, company, onBack, onUpdate }) {
 
       {/* Header */}
       <div className="ac-header">
-        <button className="ac-back-btn" onClick={onBack}>{t.back}</button>
+        <button className="ac-back-btn" onClick={onBack}>  {t.back}</button>
         <span className="ac-title">{t.editCompany}</span>
       </div>
 

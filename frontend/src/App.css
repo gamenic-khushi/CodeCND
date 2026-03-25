@@ -2,6 +2,28 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ── Universal back button ─────────────────────────────── */
+.ac-back-btn, .ac2-back-btn, .af-back-btn, .ef2-back-btn,
+.add-folder-back-btn, .upload-back-btn, .apr-btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.ac-back-btn:hover, .ac2-back-btn:hover, .af-back-btn:hover, .ef2-back-btn:hover,
+.add-folder-back-btn:hover, .upload-back-btn:hover, .apr-btn-back:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
 html, body, #root {
   height: 100%;
   overflow: hidden;
@@ -576,19 +598,7 @@ body {
   margin-bottom: 40px;
 }
 
-.add-folder-back-btn {
-  background: #ffffff;
-  border: 1px solid #e2e5ea;
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 13px;
-  font-family: 'Segoe UI', sans-serif;
-  color: #1a1a2e;
-  cursor: pointer;
-  transition: background 0.15s;
-  flex-shrink: 0;
-}
-.add-folder-back-btn:hover { background: #f5f5f5; }
+.add-folder-back-btn { flex-shrink: 0; }
 
 .add-folder-title {
   font-size: 28px;
@@ -762,23 +772,7 @@ body {
   margin-bottom: 0;
 }
 
-.ac-back-btn {
-  background: #ffffff;
-  border: 1px solid #e2e5ea;
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  color: #1a1a2e;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-  transition: background 0.15s;
-}
-.ac-back-btn:hover { background: #f5f5f5; }
+.ac-back-btn { flex-shrink: 0; }
 
 .ac-title {
   font-size: 26px;
@@ -1843,19 +1837,7 @@ body {
   padding: 14px 24px;
 }
 
-.upload-back-btn {
-  background: #ffffff;
-  border: 1px solid #e2e5ea;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-family: inherit;
-  font-size: 13px;
-  color: #374151;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-  white-space: nowrap;
-}
-.upload-back-btn:hover { background: #f9fafb; border-color: #c4c9d4; }
+.upload-back-btn { flex-shrink: 0; }
 
 
 .upload-body {
@@ -2519,7 +2501,7 @@ body {
   margin-top: 24px;
 }
 
-.apr-btn-back,
+.apr-btn-back { flex-shrink: 0; }
 .apr-btn-register {
   flex: 1;
   height: 52px;
@@ -2533,7 +2515,6 @@ body {
   cursor: pointer;
   transition: background 0.15s;
 }
-.apr-btn-back:hover,
 .apr-btn-register:hover { background: #f5f5f5; }
 
 /* ── File List Page (fll-*) ─────────────────────────────── */
@@ -2778,16 +2759,7 @@ body {
   flex-shrink: 0;
 }
 
-.ef2-back-btn {
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 6px 14px;
-  font-size: 14px;
-  color: #333;
-  cursor: pointer;
-}
-.ef2-back-btn:hover { background: #f5f5f5; }
+.ef2-back-btn { flex-shrink: 0; }
 
 .ef2-title {
   font-size: 22px;
@@ -3135,16 +3107,7 @@ body {
   flex-shrink: 0;
 }
 
-.ac2-back-btn {
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 6px 14px;
-  font-size: 14px;
-  color: #333;
-  cursor: pointer;
-}
-.ac2-back-btn:hover { background: #f5f5f5; }
+.ac2-back-btn { flex-shrink: 0; }
 
 .ac2-title {
   font-size: 22px;
@@ -3409,16 +3372,7 @@ body {
   flex-shrink: 0;
 }
 
-.af-back-btn {
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 6px 14px;
-  font-size: 14px;
-  color: #333;
-  cursor: pointer;
-}
-.af-back-btn:hover { background: #f5f5f5; }
+.af-back-btn { flex-shrink: 0; }
 
 .af-title {
   font-size: 22px;
