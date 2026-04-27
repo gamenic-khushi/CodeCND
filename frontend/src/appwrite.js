@@ -1,4 +1,4 @@
-import { Client, Databases, Account, Query } from 'appwrite';
+import { Client, Databases, Account, Storage, ID, Query } from 'appwrite';
 
 const DB  = process.env.REACT_APP_APPWRITE_DATABASE_ID;
 const COL = {
@@ -15,6 +15,8 @@ const _client = new Client()
 
 const _databases = new Databases(_client);
 const _account   = new Account(_client);
+const _storage   = new Storage(_client);
+const BUCKET     = process.env.REACT_APP_APPWRITE_BUCKET_ID;
 
 export const auth = {
   login: (email, password) =>
@@ -125,6 +127,7 @@ function fileFromAppwrite(doc) {
     en:       doc.title       || '',
     jp:       doc.title       || '',
     folderId: doc.folderId    || '',
+    fileId:   doc.fileId      || '',
     prompt:   doc.prompt      || '',
     result:   doc.result      || '',
     chat:     doc.chat        || '',
@@ -132,15 +135,17 @@ function fileFromAppwrite(doc) {
 }
 
 function fileToAppwrite(data) {
-  return {
+  const payload = {
     referenceId: data.refId || '',
-    folderId:    data.folderId || '',
     title:       data.en || data.jp || '',
-    ...(data.type   ? { status: data.type }     : {}),
-    ...(data.prompt ? { prompt: data.prompt }   : {}),
-    ...(data.result ? { result: data.result }   : {}),
-    ...(data.chat   ? { chat: data.chat }       : {}),
+    status:      data.type || 'File',
   };
+  if (data.folderId) payload.folderId = data.folderId;
+  if (data.fileId)   payload.fileId   = data.fileId;
+  if (data.prompt)   payload.prompt   = data.prompt;
+  if (data.result)   payload.result   = data.result;
+  if (data.chat)     payload.chat     = data.chat;
+  return payload;
 }
 
 // Pick the right mapper per collection
@@ -165,6 +170,26 @@ function toAppwrite(col, data) {
   return rest;
 }
 
+// ── Storage service ───────────────────────────────────────────────────────
+
+export const storage = {
+  upload: async (file) => {
+    if (!BUCKET) throw new Error('No storage bucket configured');
+    const result = await _storage.createFile(BUCKET, ID.unique(), file);
+    return result.$id;
+  },
+
+  previewUrl: (fileId) => {
+    if (!fileId || !BUCKET) return null;
+    return `${process.env.REACT_APP_APPWRITE_ENDPOINT}/storage/buckets/${BUCKET}/files/${fileId}/preview?project=${process.env.REACT_APP_APPWRITE_PROJECT_ID}&width=80&height=80`;
+  },
+
+  deleteFile: (fileId) => {
+    if (!fileId || !BUCKET) return Promise.resolve();
+    return _storage.deleteFile(BUCKET, fileId);
+  },
+};
+
 // ── DB service ────────────────────────────────────────────────────────────
 
 export const db = {
@@ -175,9 +200,7 @@ export const db = {
 
   create: async (col, data) => {
     const payload = toAppwrite(col, data);
-    // Always start with a letter so Appwrite accepts the ID
-    const uid = () => 'id' + Date.now().toString(16) + Math.random().toString(16).slice(2, 10);
-    const doc = await _databases.createDocument(DB, COL[col], uid(), payload);
+    const doc = await _databases.createDocument(DB, COL[col], ID.unique(), payload);
     return fromAppwrite(col, doc);
   },
 

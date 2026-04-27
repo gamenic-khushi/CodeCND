@@ -4,12 +4,16 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 const Anthropic = require('@anthropic-ai/sdk');
+const OpenAI = require('openai');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// keep backward-compat alias
+const client = anthropicClient;
 
 // Root documents folder on your PC
 const ROOT_FOLDER = 'D:\\ChatCND-Docs';
@@ -89,25 +93,36 @@ app.get('/api/file-content/:category/:subfolder/:filename', (req, res) => {
   }
 });
 
-// ✅ Chat with Claude AI
+// ✅ Chat — supports model: 'OpenAI' | 'Claude' (defaults to Claude)
 app.post('/api/chat', async (req, res) => {
-  const { messages } = req.body;
+  const { messages, model } = req.body;
   if (!messages || messages.length === 0) {
     return res.status(400).json({ error: 'No messages provided' });
   }
-  try {
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 8096,
-      system: `You are ChatCND, a helpful and intelligent AI assistant. 
+  const systemPrompt = `You are ChatCND, a helpful and intelligent AI assistant.
                Provide detailed, accurate, and well-structured answers.
-               Use bullet points and clear formatting when explaining topics.`,
-      messages: messages,
-    });
-    console.log('Claude response received ✅');
-    res.json({ reply: response.content[0].text });
+               Use bullet points and clear formatting when explaining topics.`;
+  try {
+    if (model === 'OpenAI') {
+      const response = await openaiClient.chat.completions.create({
+        model: 'gpt-4o',
+        max_tokens: 4096,
+        messages: [{ role: 'system', content: systemPrompt }, ...messages],
+      });
+      console.log('OpenAI response received ✅');
+      res.json({ reply: response.choices[0].message.content });
+    } else {
+      const response = await anthropicClient.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 8096,
+        system: systemPrompt,
+        messages: messages,
+      });
+      console.log('Claude response received ✅');
+      res.json({ reply: response.content[0].text });
+    }
   } catch (error) {
-    console.error('Claude API Error:', error.message);
+    console.error('Chat API Error:', error.message);
     res.status(500).json({ error: error.message || 'Something went wrong' });
   }
 });1

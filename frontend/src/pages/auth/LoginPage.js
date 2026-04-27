@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { auth } from '../appwrite';
+import { auth } from '../../appwrite';
 
 export default function LoginPage({ onLogin }) {
   const [email,    setEmail]    = useState('');

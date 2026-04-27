@@ -21,13 +21,13 @@ export const INITIAL_FOLDERS = [
 ];
 
 export const INITIAL_FILE_ROWS = [
-  { id: 1, refId: 'fa0002', type: 'File', en: 'pdfExample.pdf Copy',                  jp: 'pdfExample.pdf のコピー' },
-  { id: 2, refId: 'fa0003', type: 'Chat', en: 'Kitty and Pikachu Design Comparison',  jp: 'キティとピカチュウデザイン比較' },
-  { id: 3, refId: 'fa0004', type: 'File', en: '2025 Past Banner',                      jp: '2025年過去バナー' },
-  { id: 4, refId: 'fa0005', type: 'File', en: 'Instagram promotional banner design',   jp: 'Instagramプロモーションバナーデザイン' },
-  { id: 5, refId: 'fa0006', type: 'File', en: 'AU Shoji Collaboration Project',        jp: 'au商事コラボ企画' },
-  { id: 6, refId: 'fa0007', type: 'Chat', en: 'test4-1',                               jp: 'テスト4-1' },
-  { id: 7, refId: 'fa0008', type: 'File', en: 'AU Shoji Collaboration Project 2',      jp: 'au商事コラボ企画２' },
+  { id: 1, refId: 'fa0002', type: 'File', folderId: 'fo0001', en: 'pdfExample.pdf Copy',                  jp: 'pdfExample.pdf のコピー' },
+  { id: 2, refId: 'fa0003', type: 'Chat', folderId: 'fo0001', en: 'Kitty and Pikachu Design Comparison',  jp: 'キティとピカチュウデザイン比較' },
+  { id: 3, refId: 'fa0004', type: 'File', folderId: 'fo0006', en: '2025 Past Banner',                      jp: '2025年過去バナー' },
+  { id: 4, refId: 'fa0005', type: 'File', folderId: 'fo0006', en: 'Instagram promotional banner design',   jp: 'Instagramプロモーションバナーデザイン' },
+  { id: 5, refId: 'fa0006', type: 'File', folderId: 'fo0003', en: 'AU Shoji Collaboration Project',        jp: 'au商事コラボ企画' },
+  { id: 6, refId: 'fa0007', type: 'Chat', folderId: 'fo0003', en: 'test4-1',                               jp: 'テスト4-1' },
+  { id: 7, refId: 'fa0008', type: 'File', folderId: 'fo0003', en: 'AU Shoji Collaboration Project 2',      jp: 'au商事コラボ企画２' },
 ];
 
 export const INITIAL_PR_ROWS = [
