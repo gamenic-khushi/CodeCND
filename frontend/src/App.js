@@ -42,7 +42,7 @@ export default function App() {
     { id: 'co0011', en: "McDonald's",              jp: 'マクドナルド' },
     { id: 'co0012', en: 'Nissan Motor Corporation', jp: '日産自動車株式会社' },
   ]);
-  const [toast, setToast]           = useState(null);
+  const [, setToast]                 = useState(null);
   const [products, setProducts]     = useState(INITIAL_PRODUCTS);
   const [folderRows, setFolderRows] = useState(INITIAL_FOLDERS);
   const [fileRows, setFileRows]     = useState(INITIAL_FILE_ROWS);
