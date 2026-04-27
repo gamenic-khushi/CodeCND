@@ -28,6 +28,7 @@ export default function NotificationPage({ lang, user, folderRows, products, com
   const t = translations[lang];
 
   const [productsOpen,      setProductsOpen]      = useState(false);
+  const [pdCoSearch,        setPdCoSearch]        = useState('');
   const [foldersOpen,       setFoldersOpen]       = useState(false);
   const [collapsed,         setCollapsed]         = useState(false);
   const [langOpen,          setLangOpen]          = useState(false);
@@ -54,6 +55,11 @@ export default function NotificationPage({ lang, user, folderRows, products, com
     setShowNewFolder(false); setNewFolderName(''); setNewFolderProduct('');
     setNfDropOpen(false); setNfDropStep('company'); setNfDropCompany(null); setNfCoSearch('');
   }
+
+  const pdFilteredCompanies = (companies || []).filter(c => {
+    const name = lang === 'en' ? c.en : (c.jp || c.en);
+    return !pdCoSearch || name.toLowerCase().includes(pdCoSearch.toLowerCase());
+  });
 
   const nfSelectedProduct = (products || []).find(p => (p._awid || p.id) === newFolderProduct);
   const nfTriggerLabel = nfSelectedProduct
@@ -121,7 +127,7 @@ export default function NotificationPage({ lang, user, folderRows, products, com
             {!collapsed && t.companies}
           </button>
 
-          <button className="np-nav-item np-nav-item--expand" title={t.products} onClick={() => !collapsed && setProductsOpen(o => !o)}>
+          <button className="np-nav-item np-nav-item--expand" title={t.products} onClick={() => { if (!collapsed) { setProductsOpen(o => !o); setPdCoSearch(''); } }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
@@ -132,6 +138,37 @@ export default function NotificationPage({ lang, user, folderRows, products, com
             </span>
             {!collapsed && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: productsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>}
           </button>
+
+          {!collapsed && productsOpen && (
+            <div className="np-pd-panel">
+              <div className="np-pd-search-wrap">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input
+                  className="np-pd-search"
+                  placeholder={t.searchCompany || 'Search company...'}
+                  value={pdCoSearch}
+                  onChange={e => setPdCoSearch(e.target.value)}
+                />
+              </div>
+              <div className="np-pd-section-label">COMPANY</div>
+              <div className="np-pd-list">
+                {pdFilteredCompanies.map(c => (
+                  <button key={c.id} className="np-pd-item" onClick={() => onNavigate('companies')}>
+                    <div className="np-pd-item-icon">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                      </svg>
+                    </div>
+                    <span className="np-pd-item-name">{lang === 'en' ? c.en : (c.jp || c.en)}</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', flexShrink: 0 }}><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                ))}
+                {pdFilteredCompanies.length === 0 && (
+                  <div className="np-pd-empty">{t.noCompanies || 'No companies found'}</div>
+                )}
+              </div>
+            </div>
+          )}
 
           <button className="np-nav-item np-nav-item--expand" title={t.folders} onClick={() => !collapsed && setFoldersOpen(o => !o)}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
