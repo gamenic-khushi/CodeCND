@@ -779,15 +779,14 @@ body {
 .fd-file-type-badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 50px; background: #f0f1f8; color: #6366f1; flex-shrink: 0; }
 
 /* Matrix tab list */
-.fd-matrix-list { width: 100%; max-width: 680px; display: flex; flex-direction: column; }
-.fd-matrix-item { padding: 20px 4px; border-bottom: 1px solid #f0f1f5; }
-.fd-matrix-item:last-child { border-bottom: none; }
-.fd-matrix-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.fd-matrix-list { width: 100%; display: flex; flex-direction: column; gap: 12px; padding: 4px 0 24px; }
+.fd-matrix-item { width: 100%; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+.fd-matrix-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .fd-matrix-dot { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }
 .fd-matrix-title { font-size: 14.5px; font-weight: 700; color: #18192a; flex: 1; }
-.fd-matrix-done { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: #16a34a; flex-shrink: 0; }
+.fd-matrix-done { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: #16a34a; background: #dcfce7; border-radius: 50px; padding: 3px 10px; flex-shrink: 0; }
 .fd-matrix-time { font-size: 12px; color: #9098a9; flex-shrink: 0; }
-.fd-matrix-content { font-size: 13.5px; color: #374151; line-height: 1.65; padding-left: 20px; }
+.fd-matrix-content { font-size: 13.5px; color: #374151; line-height: 1.65; }
 
 /* ── Matrix Generation Page ─────────────────────────────── */
 .mg-layout { display: flex; height: 100vh; overflow: hidden; background: #fff; }

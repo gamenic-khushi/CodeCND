@@ -383,7 +383,7 @@ export default function FolderDetailPage({
               </button>
             </div>
           ) : (
-            <div className="fd-matrix-list">
+            <div className="fd-matrix-list" style={{ alignSelf: 'stretch' }}>
               {folderFiles.map(f => {
                 const name = lang === 'en' ? f.en : (f.jp || f.en);
                 const timeStr = f.savedAt ? new Date(f.savedAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
