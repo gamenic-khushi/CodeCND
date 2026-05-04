@@ -1,8 +1,16 @@
 import { useState } from 'react';
 import translations from '../../translations';
 
+const MATRIX_ITEMS = [
+  { id: 1, title: 'Banner Copy',      subtitle: 'Write compelling banner copy for the product launch campaign targeting young professionals aged 25–35.' },
+  { id: 2, title: 'Visual Direction', subtitle: 'Describe the visual style, color palette, and imagery direction for the campaign materials.' },
+  { id: 3, title: 'Target Audience',  subtitle: 'Define the primary and secondary target audiences for this campaign.' },
+  { id: 4, title: 'Key Message',      subtitle: 'Craft the core brand message and value proposition for the campaign.' },
+];
+
 export default function FolderDetailPage({
   lang, user, folder, fileRows = [], folderRows = [], companies = [], products = [],
+  matrixData = {},
   onLogout, onToggleLang, onNavigate, onBack, onNewChat, onAddFile, onOpenMatrix,
 }) {
   const t = translations[lang];
@@ -369,41 +377,39 @@ export default function FolderDetailPage({
 
         {/* ── Matrix tab ── */}
         {activeTab === 'matrix' && (
-          folderFiles.length === 0 ? (
-            <div className="fd-empty">
-              <div className="fd-empty-icon-wrap">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-                </svg>
-              </div>
-              <p className="fd-empty-text">No matrices yet</p>
+          <div className="fd-matrix-list" style={{ alignSelf: 'stretch' }}>
+            {MATRIX_ITEMS.map(item => {
+              const result = matrixData[item.id];
+              const isDone = result?.output && !result.output.startsWith('Error:');
+              const timeStr = result?.generatedAt
+                ? new Date(result.generatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                : '';
+              return (
+                <div key={item.id} className="fd-matrix-item">
+                  <div className="fd-matrix-header">
+                    <span className="fd-matrix-dot" style={{ background: isDone ? '#22c55e' : '#c0c4d0' }} />
+                    <span className="fd-matrix-title">{item.title}</span>
+                    {isDone && (
+                      <span className="fd-matrix-done">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Done
+                      </span>
+                    )}
+                    {timeStr && <span className="fd-matrix-time">{timeStr}</span>}
+                  </div>
+                  <p className="fd-matrix-content" style={!isDone ? { color: '#9098a9' } : {}}>
+                    {isDone ? result.output : item.subtitle}
+                  </p>
+                </div>
+              );
+            })}
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 8, paddingBottom: 24 }}>
               <button className="fd-new-btn" onClick={() => onOpenMatrix?.()}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 Generate matrix
               </button>
             </div>
-          ) : (
-            <div className="fd-matrix-list" style={{ alignSelf: 'stretch' }}>
-              {folderFiles.map(f => {
-                const name = lang === 'en' ? f.en : (f.jp || f.en);
-                const timeStr = f.savedAt ? new Date(f.savedAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
-                return (
-                  <div key={f.id} className="fd-matrix-item">
-                    <div className="fd-matrix-header">
-                      <span className="fd-matrix-dot" />
-                      <span className="fd-matrix-title">{name}</span>
-                      <span className="fd-matrix-done">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        Done
-                      </span>
-                      <span className="fd-matrix-time">{timeStr}</span>
-                    </div>
-                    {f.prompt && <p className="fd-matrix-content">{f.prompt}</p>}
-                  </div>
-                );
-              })}
-            </div>
-          )
+          </div>
         )}
 
       </main>

@@ -35,6 +35,8 @@ export default function App() {
   const [newChatInitFolder,    setNewChatInitFolder]    = useState(null);
   const [showAddFile,          setShowAddFile]          = useState(false);
   const [addFileInitFolder,    setAddFileInitFolder]    = useState(null);
+  const [matrixData,           setMatrixData]           = useState({});
+  const [matrixGenFolder,      setMatrixGenFolder]      = useState(null);
   const [formData, setFormData]                 = useState(EMPTY_FORM);
   const [companies, setCompanies]               = useState([
     { id: 'co0001', en: 'Company A',               jp: 'カンパニーA' },
@@ -261,9 +263,10 @@ export default function App() {
       onToggleLang={toggleLang}
       onNavigate={(section) => handleSidebarNavigate(section, setShowFolderDetail)}
       onBack={() => { setShowFolderDetail(false); setShowCompanies(true); }}
+      matrixData={matrixData[selectedFolderDetail?._awid || selectedFolderDetail?.id] || {}}
       onNewChat={() => { setNewChatInitFolder(selectedFolderDetail); setShowFolderDetail(false); setShowNewChat(true); }}
       onAddFile={() => { setAddFileInitFolder(selectedFolderDetail); setShowFolderDetail(false); setShowAddFile(true); }}
-      onOpenMatrix={() => { setShowFolderDetail(false); setShowMatrixGen(true); }}
+      onOpenMatrix={() => { setMatrixGenFolder(selectedFolderDetail); setShowFolderDetail(false); setShowMatrixGen(true); }}
     />
   );
 
@@ -294,8 +297,26 @@ export default function App() {
       companies={companies}
       onLogout={handleLogout}
       onToggleLang={toggleLang}
-      onBack={() => { setShowMatrixGen(false); setShowNewChat(true); }}
+      onBack={() => {
+        setShowMatrixGen(false);
+        if (matrixGenFolder) {
+          setSelectedFolderDetail(matrixGenFolder);
+          setShowFolderDetail(true);
+        } else {
+          setShowNewChat(true);
+        }
+      }}
       onNavigate={(section) => handleSidebarNavigate(section, setShowMatrixGen)}
+      onSaveMatrix={(outputs, prompts) => {
+        const folderId = matrixGenFolder?._awid || matrixGenFolder?.id;
+        if (!folderId) return;
+        const ts = new Date().toISOString();
+        const results = Object.entries(outputs).reduce((acc, [id, output]) => ({
+          ...acc,
+          [id]: { output, prompt: prompts[id] || '', generatedAt: ts },
+        }), {});
+        setMatrixData(prev => ({ ...prev, [folderId]: { ...(prev[folderId] || {}), ...results } }));
+      }}
     />
   );
 

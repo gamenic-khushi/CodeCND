@@ -10,7 +10,7 @@ const MATRIX_ITEMS = [
   { id: 4, title: 'Key Message',      subtitle: 'Craft the core brand message and val...',    defaultPrompt: 'Craft the core brand message and value proposition for the campaign.' },
 ];
 
-export default function MatrixGenerationPage({ lang, user, folderRows, companies, onBack, onLogout, onToggleLang, onNavigate }) {
+export default function MatrixGenerationPage({ lang, user, folderRows, companies, onBack, onLogout, onToggleLang, onNavigate, onSaveMatrix }) {
   const t = translations[lang];
 
   // Sidebar
@@ -49,22 +49,30 @@ export default function MatrixGenerationPage({ lang, user, folderRows, companies
       : setCheckedItems(new Set(MATRIX_ITEMS.map(i => i.id)));
   }
 
+  async function callGPT(prompt) {
+    const res = await fetch(`${API}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'OpenAI',
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
+    return data.reply;
+  }
+
   async function handleGenerate(id) {
     if (generating[id]) return;
     setGenerating(p => ({ ...p, [id]: true }));
     try {
-      const res = await fetch(`${API}/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'OpenAI',
-          messages: [{ role: 'user', content: prompts[id] }],
-        }),
-      });
-      const data = await res.json();
-      setOutputs(p => ({ ...p, [id]: data.reply || 'No response received.' }));
+      const reply = await callGPT(prompts[id]);
+      const newOutputs = { ...outputs, [id]: reply };
+      setOutputs(newOutputs);
+      onSaveMatrix?.(newOutputs, prompts);
     } catch (err) {
-      setOutputs(p => ({ ...p, [id]: 'Error: ' + (err.message || 'Failed to generate.') }));
+      setOutputs(p => ({ ...p, [id]: 'Error: ' + err.message }));
     } finally {
       setGenerating(p => ({ ...p, [id]: false }));
     }
@@ -76,25 +84,20 @@ export default function MatrixGenerationPage({ lang, user, folderRows, companies
     if (!pending.length) return;
     setGeneratingAll(true);
     pending.forEach(item => setGenerating(p => ({ ...p, [item.id]: true })));
+    let newOutputs = { ...outputs };
     await Promise.all(pending.map(async (item) => {
       try {
-        const res = await fetch(`${API}/chat`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'OpenAI',
-            messages: [{ role: 'user', content: prompts[item.id] }],
-          }),
-        });
-        const data = await res.json();
-        setOutputs(p => ({ ...p, [item.id]: data.reply || 'No response received.' }));
+        const reply = await callGPT(prompts[item.id]);
+        newOutputs = { ...newOutputs, [item.id]: reply };
+        setOutputs(p => ({ ...p, [item.id]: reply }));
       } catch (err) {
-        setOutputs(p => ({ ...p, [item.id]: 'Error: ' + (err.message || 'Failed to generate.') }));
+        setOutputs(p => ({ ...p, [item.id]: 'Error: ' + err.message }));
       } finally {
         setGenerating(p => ({ ...p, [item.id]: false }));
       }
     }));
     setGeneratingAll(false);
+    onSaveMatrix?.(newOutputs, prompts);
   }
 
   const pdFilteredCompanies = (companies || []).filter(c => {
