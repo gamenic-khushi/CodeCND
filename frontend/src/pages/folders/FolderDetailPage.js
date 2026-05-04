@@ -78,12 +78,12 @@ export default function FolderDetailPage({
                   <div className="cp-lang-dropdown">
                     <button className={`cp-lang-option${lang === 'en' ? ' cp-lang-option--active' : ''}`}
                       onClick={() => { if (lang !== 'en') onToggleLang?.(); setLangOpen(false); }}>
-                      {t.english}
+                      <span className="cp-lang-badge">EN</span>{t.english}
                       {lang === 'en' && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}><polyline points="20 6 9 17 4 12"/></svg>}
                     </button>
                     <button className={`cp-lang-option${lang === 'jp' ? ' cp-lang-option--active' : ''}`}
                       onClick={() => { if (lang !== 'jp') onToggleLang?.(); setLangOpen(false); }}>
-                      {t.japanese}
+                      <span className="cp-lang-badge">JP</span>{t.japanese}
                       {lang === 'jp' && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}><polyline points="20 6 9 17 4 12"/></svg>}
                     </button>
                   </div>

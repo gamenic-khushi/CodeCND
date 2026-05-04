@@ -27,10 +27,17 @@ export default function LoginPage({ onLogin }) {
   return (
     <div className="login-page">
       <div className="login-card">
-        <div className="login-logo">CND</div>
-        <div className="login-version">Version 0.58</div>
-        <div className="login-subtitle">Sign in to your account</div>
-        <div className="login-env">DEV</div>
+        <div className="login-brand">
+          <div className="login-brand-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="white"/>
+            </svg>
+          </div>
+          <span className="login-brand-name">ChatCND</span>
+        </div>
+
+        <h1 className="login-title">Sign in to your account</h1>
+        <p className="login-subtitle">Enter your credentials to continue</p>
 
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="login-field">
@@ -40,7 +47,7 @@ export default function LoginPage({ onLogin }) {
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="Enter email"
+              placeholder="you@example.com"
               autoFocus
             />
           </div>
@@ -52,7 +59,7 @@ export default function LoginPage({ onLogin }) {
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder="Enter password"
+              placeholder="••••••••"
             />
           </div>
 
@@ -63,7 +70,11 @@ export default function LoginPage({ onLogin }) {
           </button>
         </form>
 
-        <div className="login-footer">Sign in with your Appwrite account</div>
+        <div className="login-demo">
+          <div className="login-demo-title">DEMO CREDENTIALS</div>
+          <code className="login-demo-line">tanaka@example.com</code>
+          <code className="login-demo-line">password</code>
+        </div>
       </div>
     </div>
   );

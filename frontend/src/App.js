@@ -230,6 +230,8 @@ export default function App() {
     <MatrixGenerationPage
       lang={lang}
       user={user}
+      folderRows={folderRows}
+      companies={companies}
       onLogout={handleLogout}
       onToggleLang={toggleLang}
       onBack={() => { setShowMatrixGen(false); setShowNewChat(true); }}

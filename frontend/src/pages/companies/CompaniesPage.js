@@ -98,10 +98,16 @@ export default function CompaniesPage({
   function toggleCheck(id) { setChecked(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; }); }
 
   function SortArrow({ col }) {
+    const upColor   = sort.col === col && sort.dir === 'asc'  ? '#6366f1' : '#b0b8c8';
+    const downColor = sort.col === col && sort.dir === 'desc' ? '#6366f1' : '#b0b8c8';
     return (
-      <svg width="12" height="16" viewBox="0 0 12 16" fill="none" style={{ marginLeft: 4, flexShrink: 0 }}>
-        <path d="M6 1L9 5H3L6 1Z" fill={sort.col === col && sort.dir === 'asc' ? '#6366f1' : '#c0c4d0'} />
-        <path d="M6 15L3 11H9L6 15Z" fill={sort.col === col && sort.dir === 'desc' ? '#6366f1' : '#c0c4d0'} />
+      <svg width="12" height="18" viewBox="0 0 12 18" fill="none" style={{ marginLeft: 4, flexShrink: 0 }}>
+        {/* Up arrow */}
+        <polyline points="2.5,7 6,2.5 9.5,7" stroke={upColor} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        <line x1="6" y1="3" x2="6" y2="8.5" stroke={upColor} strokeWidth="1.6" strokeLinecap="round"/>
+        {/* Down arrow */}
+        <polyline points="2.5,11 6,15.5 9.5,11" stroke={downColor} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        <line x1="6" y1="9.5" x2="6" y2="15" stroke={downColor} strokeWidth="1.6" strokeLinecap="round"/>
       </svg>
     );
   }
@@ -298,12 +304,12 @@ export default function CompaniesPage({
                   <div className="cp-lang-dropdown">
                     <button className={`cp-lang-option${lang === 'en' ? ' cp-lang-option--active' : ''}`}
                       onClick={() => { if (lang !== 'en') onToggleLang?.(); setLangOpen(false); }}>
-                      {t.english}
+                      <span className="cp-lang-badge">EN</span>{t.english}
                       {lang === 'en' && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}><polyline points="20 6 9 17 4 12"/></svg>}
                     </button>
                     <button className={`cp-lang-option${lang === 'jp' ? ' cp-lang-option--active' : ''}`}
                       onClick={() => { if (lang !== 'jp') onToggleLang?.(); setLangOpen(false); }}>
-                      {t.japanese}
+                      <span className="cp-lang-badge">JP</span>{t.japanese}
                       {lang === 'jp' && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}><polyline points="20 6 9 17 4 12"/></svg>}
                     </button>
                   </div>

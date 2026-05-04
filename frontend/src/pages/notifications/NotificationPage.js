@@ -30,10 +30,12 @@ export default function NotificationPage({ lang, user, folderRows, products, com
   const [productsOpen,      setProductsOpen]      = useState(false);
   const [pdCoSearch,        setPdCoSearch]        = useState('');
   const [foldersOpen,       setFoldersOpen]       = useState(false);
+  const [fdCoSearch,        setFdCoSearch]        = useState('');
   const [collapsed,         setCollapsed]         = useState(false);
   const [langOpen,          setLangOpen]          = useState(false);
-  const [recentFoldersOpen, setRecentFoldersOpen] = useState(false);
+  const [recentFoldersOpen, setRecentFoldersOpen] = useState(true);
   const [recentFilesOpen,   setRecentFilesOpen]   = useState(false);
+  const [folderSearch,      setFolderSearch]      = useState('');
   const [showNewFolder,     setShowNewFolder]     = useState(false);
   const [newFolderName,     setNewFolderName]     = useState('');
   const [newFolderProduct,  setNewFolderProduct]  = useState('');
@@ -61,6 +63,11 @@ export default function NotificationPage({ lang, user, folderRows, products, com
     return !pdCoSearch || name.toLowerCase().includes(pdCoSearch.toLowerCase());
   });
 
+  const fdFilteredCompanies = (companies || []).filter(c => {
+    const name = lang === 'en' ? c.en : (c.jp || c.en);
+    return !fdCoSearch || name.toLowerCase().includes(fdCoSearch.toLowerCase());
+  });
+
   const nfSelectedProduct = (products || []).find(p => (p._awid || p.id) === newFolderProduct);
   const nfTriggerLabel = nfSelectedProduct
     ? `${lang === 'en' ? (nfSelectedProduct.companyEn || '') : (nfSelectedProduct.companyJp || nfSelectedProduct.companyEn || '')} › ${lang === 'en' ? nfSelectedProduct.en : (nfSelectedProduct.jp || nfSelectedProduct.en)}`
@@ -76,7 +83,9 @@ export default function NotificationPage({ lang, user, folderRows, products, com
   const displayName = user?.name || user?.email?.split('@')[0] || 'User';
   const displayEmail = user?.email || '';
 
-  const recentFolders = (folderRows || []).slice(0, 10);
+  const recentFolders = (folderRows || [])
+    .slice(0, 10)
+    .filter(f => !folderSearch || (lang === 'en' ? f.en : f.jp)?.toLowerCase().includes(folderSearch.toLowerCase()));
 
   return (
     <div className="np-layout">
@@ -170,7 +179,7 @@ export default function NotificationPage({ lang, user, folderRows, products, com
             </div>
           )}
 
-          <button className="np-nav-item np-nav-item--expand" title={t.folders} onClick={() => !collapsed && setFoldersOpen(o => !o)}>
+          <button className="np-nav-item np-nav-item--expand" title={t.folders} onClick={() => { if (!collapsed) { setFoldersOpen(o => !o); setFdCoSearch(''); } }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
@@ -179,6 +188,37 @@ export default function NotificationPage({ lang, user, folderRows, products, com
             </span>
             {!collapsed && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: foldersOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>}
           </button>
+
+          {!collapsed && foldersOpen && (
+            <div className="np-pd-panel">
+              <div className="np-pd-search-wrap">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input
+                  className="np-pd-search"
+                  placeholder={t.searchCompany || 'Search company...'}
+                  value={fdCoSearch}
+                  onChange={e => setFdCoSearch(e.target.value)}
+                />
+              </div>
+              <div className="np-pd-section-label">COMPANY</div>
+              <div className="np-pd-list">
+                {fdFilteredCompanies.map(c => (
+                  <button key={c.id} className="np-pd-item" onClick={() => onNavigate('folders')}>
+                    <div className="np-pd-item-icon">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                      </svg>
+                    </div>
+                    <span className="np-pd-item-name">{lang === 'en' ? c.en : (c.jp || c.en)}</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', flexShrink: 0 }}><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                ))}
+                {fdFilteredCompanies.length === 0 && (
+                  <div className="np-pd-empty">{t.noCompanies || 'No companies found'}</div>
+                )}
+              </div>
+            </div>
+          )}
 
         </nav>
 
@@ -192,17 +232,28 @@ export default function NotificationPage({ lang, user, folderRows, products, com
             </svg>
           </button>
           {recentFoldersOpen && (
-            <div className="np-folder-list">
-              {recentFolders.length === 0 && <div style={{ padding: '4px 16px', fontSize: 12, color: '#9098a9' }}>{t.noFoldersYet}</div>}
-              {recentFolders.map((f, i) => (
-                <button key={i} className="np-folder-item" onClick={() => onNavigate('folders')}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                  </svg>
-                  {lang === 'en' ? f.en : f.jp}
-                </button>
-              ))}
-            </div>
+            <>
+              <div className="np-folder-search-wrap">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input
+                  className="np-folder-search"
+                  placeholder={t.searchFolders || 'Search folders...'}
+                  value={folderSearch}
+                  onChange={e => setFolderSearch(e.target.value)}
+                />
+              </div>
+              <div className="np-folder-list">
+                {recentFolders.length === 0 && <div style={{ padding: '4px 16px', fontSize: 12, color: '#9098a9' }}>{t.noFoldersYet}</div>}
+                {recentFolders.map((f, i) => (
+                  <button key={i} className="np-folder-item" onClick={() => onNavigate('folders')}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    {lang === 'en' ? f.en : f.jp}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
 
           <button className="np-section-label cp-section-label--btn" onClick={() => setRecentFilesOpen(o => !o)}>
@@ -243,12 +294,12 @@ export default function NotificationPage({ lang, user, folderRows, products, com
                   <div className="cp-lang-dropdown">
                     <button className={`cp-lang-option${lang === 'en' ? ' cp-lang-option--active' : ''}`}
                       onClick={() => { if (lang !== 'en') onToggleLang?.(); setLangOpen(false); }}>
-                      {t.english}
+                      <span className="cp-lang-badge">EN</span>{t.english}
                       {lang === 'en' && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}><polyline points="20 6 9 17 4 12"/></svg>}
                     </button>
                     <button className={`cp-lang-option${lang === 'jp' ? ' cp-lang-option--active' : ''}`}
                       onClick={() => { if (lang !== 'jp') onToggleLang?.(); setLangOpen(false); }}>
-                      {t.japanese}
+                      <span className="cp-lang-badge">JP</span>{t.japanese}
                       {lang === 'jp' && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}><polyline points="20 6 9 17 4 12"/></svg>}
                     </button>
                   </div>
@@ -259,7 +310,7 @@ export default function NotificationPage({ lang, user, folderRows, products, com
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', transform: langOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
               </div>
-              <div className="np-version">v1.0.0</div>
+              <div className="np-version">{UPDATES[0]?.version}</div>
             </>
           )}
         </div>

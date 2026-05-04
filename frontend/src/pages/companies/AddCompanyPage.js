@@ -159,14 +159,14 @@ export default function AddCompanyPage({
                       className={`cp-lang-option${lang === 'en' ? ' cp-lang-option--active' : ''}`}
                       onClick={() => { if (lang !== 'en') onToggleLang?.(); setLangOpen(false); }}
                     >
-                      {t.english}
+                      <span className="cp-lang-badge">EN</span>{t.english}
                       {lang === 'en' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
                     </button>
                     <button
                       className={`cp-lang-option${lang === 'jp' ? ' cp-lang-option--active' : ''}`}
                       onClick={() => { if (lang !== 'jp') onToggleLang?.(); setLangOpen(false); }}
                     >
-                      {t.japanese}
+                      <span className="cp-lang-badge">JP</span>{t.japanese}
                       {lang === 'jp' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
                     </button>
                   </div>

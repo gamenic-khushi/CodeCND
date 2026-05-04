@@ -35,6 +35,7 @@ export default function NewChatPage({ lang, user, folders, companies, folderRows
   const [collapsed,      setCollapsed]      = useState(false);
   const [productsOpen,   setProductsOpen]   = useState(false);
   const [foldersOpen,    setFoldersOpen]     = useState(false);
+  const [fdCoSearch,     setFdCoSearch]      = useState('');
   const [folderSearch,    setFolderSearch]    = useState('');
   const [companySearch,   setCompanySearch]   = useState('');
   const [langOpen,        setLangOpen]        = useState(false);
@@ -68,6 +69,9 @@ export default function NewChatPage({ lang, user, folders, companies, folderRows
   // Sparkle generate output
   const [generatedContent, setGeneratedContent] = useState('');
   const [isGenerating,     setIsGenerating]     = useState(false);
+
+  // Prompt / Generation Logs tab
+  const [promptTab, setPromptTab] = useState('prompt');
 
   // Generate Log modal
   const [showGenLogModal, setShowGenLogModal] = useState(false);
@@ -152,6 +156,9 @@ export default function NewChatPage({ lang, user, folders, companies, folderRows
 
   const filteredCompanies = (companies || [])
     .filter(c => (lang === 'en' ? c.en : c.jp || c.en || '').toLowerCase().includes(companySearch.toLowerCase()));
+
+  const fdFilteredCompanies = (companies || [])
+    .filter(c => (lang === 'en' ? c.en : c.jp || c.en || '').toLowerCase().includes(fdCoSearch.toLowerCase()));
 
   // Derive unique companies that have folders
   const folderData = folders || [];
@@ -296,7 +303,7 @@ export default function NewChatPage({ lang, user, folders, companies, folderRows
           )}
 
           {/* Folders */}
-          <button className="ncp-nav-item ncp-nav-item--expand" title={t.folders} onClick={() => !collapsed && setFoldersOpen(o => !o)}>
+          <button className="ncp-nav-item ncp-nav-item--expand" title={t.folders} onClick={() => { if (!collapsed) { setFoldersOpen(o => !o); setFdCoSearch(''); } }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
@@ -305,6 +312,37 @@ export default function NewChatPage({ lang, user, folders, companies, folderRows
             </span>
             {!collapsed && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: foldersOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>}
           </button>
+
+          {!collapsed && foldersOpen && (
+            <div className="ncp-company-panel">
+              <div className="ncp-company-search-wrap">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input
+                  className="ncp-company-search"
+                  placeholder={t.searchCompany || 'Search company...'}
+                  value={fdCoSearch}
+                  onChange={e => setFdCoSearch(e.target.value)}
+                />
+              </div>
+              <div className="ncp-section-label" style={{ padding: '8px 16px 4px' }}>COMPANY</div>
+              <div className="ncp-company-list">
+                {fdFilteredCompanies.map((c, i) => (
+                  <button key={i} className="ncp-company-item" onClick={() => onNavigate('folders')}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span>{lang === 'en' ? c.en : (c.jp || c.en)}</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}>
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </button>
+                ))}
+                {fdFilteredCompanies.length === 0 && (
+                  <div style={{ padding: '10px 12px', fontSize: 12, color: '#9098a9', textAlign: 'center' }}>{t.noCompanies || 'No companies found'}</div>
+                )}
+              </div>
+            </div>
+          )}
 
         </nav>
 
@@ -371,12 +409,12 @@ export default function NewChatPage({ lang, user, folders, companies, folderRows
                   <div className="cp-lang-dropdown">
                     <button className={`cp-lang-option${lang === 'en' ? ' cp-lang-option--active' : ''}`}
                       onClick={() => { if (lang !== 'en') onToggleLang?.(); setLangOpen(false); }}>
-                      {t.english}
+                      <span className="cp-lang-badge">EN</span>{t.english}
                       {lang === 'en' && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}><polyline points="20 6 9 17 4 12"/></svg>}
                     </button>
                     <button className={`cp-lang-option${lang === 'jp' ? ' cp-lang-option--active' : ''}`}
                       onClick={() => { if (lang !== 'jp') onToggleLang?.(); setLangOpen(false); }}>
-                      {t.japanese}
+                      <span className="cp-lang-badge">JP</span>{t.japanese}
                       {lang === 'jp' && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}><polyline points="20 6 9 17 4 12"/></svg>}
                     </button>
                   </div>
@@ -523,21 +561,43 @@ export default function NewChatPage({ lang, user, folders, companies, folderRows
             </div>
 
             <div className="ncp-field ncp-field--grow">
-              <div className="ncp-prompt-header">
-                <label className="ncp-field-label">{t.prompt}</label>
-                <button className="ncp-generate-log-btn" onClick={handleOpenGenLog}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-                  </svg>
-                  {t.generateLog}
-                </button>
+              <div className="ncp-prompt-tabs">
+                <button
+                  className={`ncp-prompt-tab${promptTab === 'prompt' ? ' ncp-prompt-tab--active' : ''}`}
+                  onClick={() => setPromptTab('prompt')}
+                >{t.prompt}</button>
+                <button
+                  className={`ncp-prompt-tab${promptTab === 'generationLogs' ? ' ncp-prompt-tab--active' : ''}`}
+                  onClick={() => { setPromptTab('generationLogs'); handleOpenGenLog(); }}
+                >{t.generateLog}</button>
               </div>
-              <textarea
-                className="ncp-prompt-textarea ncp-prompt-textarea--md"
-                placeholder=""
-                value={prompt}
-                onChange={e => setPrompt(e.target.value)}
-              />
+              {promptTab === 'prompt' ? (
+                <textarea
+                  className="ncp-prompt-textarea ncp-prompt-textarea--md"
+                  placeholder=""
+                  value={prompt}
+                  onChange={e => setPrompt(e.target.value)}
+                />
+              ) : (
+                <div className="ncp-genlog-tab-body">
+                  {!prompt.trim() ? (
+                    <div className="ncp-genlog-empty">{t.noMessagesYet}</div>
+                  ) : (
+                    <>
+                      <div className="ncp-genlog-section">
+                        <div className="ncp-genlog-label">{t.you}</div>
+                        <div className="ncp-genlog-user-bubble">{prompt}</div>
+                      </div>
+                      <div className="ncp-genlog-section">
+                        <div className="ncp-genlog-label">{t.assistantLabel}</div>
+                        <div className="ncp-genlog-assistant-bubble">
+                          {genLogLoading ? 'Generating…' : genLogReply}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
 
           </div>
@@ -674,18 +734,14 @@ export default function NewChatPage({ lang, user, folders, companies, folderRows
               </button>
             </div>
 
-            {/* Matrix Generation row */}
-            <div className="ncp-matrix-row">
+            {/* Matrix Generation + Save row */}
+            <div className="ncp-bottom-row">
               <button className="ncp-matrix-btn" onClick={onMatrixGenerate}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
                 </svg>
                 Matrix Generation
               </button>
-            </div>
-
-            {/* Save row */}
-            <div className="ncp-save-row">
               <button className="ncp-save-btn" onClick={handleSave}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
