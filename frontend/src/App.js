@@ -200,10 +200,14 @@ export default function App() {
       user={user}
       folder={selectedFolderDetail}
       fileRows={fileRows}
+      folderRows={folderRows}
+      companies={companies}
+      products={products}
       onLogout={handleLogout}
       onToggleLang={toggleLang}
       onNavigate={(section) => handleSidebarNavigate(section, setShowFolderDetail)}
       onBack={() => { setShowFolderDetail(false); setShowCompanies(true); }}
+      onNewChat={() => { setShowFolderDetail(false); setShowNewChat(true); }}
     />
   );
 

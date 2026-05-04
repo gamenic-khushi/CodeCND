@@ -2,22 +2,34 @@ import { useState } from 'react';
 import translations from '../../translations';
 
 export default function FolderDetailPage({
-  lang, user, folder, fileRows = [],
-  onLogout, onToggleLang, onNavigate, onNewChat,
+  lang, user, folder, fileRows = [], folderRows = [], companies = [], products = [],
+  onLogout, onToggleLang, onNavigate, onBack, onNewChat,
 }) {
   const t = translations[lang];
-  const [activeTab, setActiveTab] = useState('chat');
-  const [collapsed, setCollapsed] = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
+  const [activeTab, setActiveTab]       = useState('chat');
+  const [collapsed, setCollapsed]       = useState(false);
+  const [langOpen, setLangOpen]         = useState(false);
+  const [productsOpen, setProductsOpen] = useState(false);
+  const [foldersOpen, setFoldersOpen]   = useState(true);
+  const [pdCoSearch, setPdCoSearch]     = useState('');
+  const [fdCoSearch, setFdCoSearch]     = useState('');
+  const [recentFoldersOpen, setRecentFoldersOpen] = useState(false);
+  const [recentFilesOpen, setRecentFilesOpen]     = useState(true);
+  const [folderSearch, setFolderSearch] = useState('');
+  const [fileSearch, setFileSearch]     = useState('');
 
   const folderName  = lang === 'en' ? folder.en  : (folder.jp  || folder.en);
   const companyName = lang === 'en' ? folder.companyEn : (folder.companyJp || folder.companyEn || '');
   const productName = lang === 'en' ? folder.productEn : (folder.productJp || folder.productEn || '');
 
   const folderFiles = fileRows.filter(f => f.folderId === folder.id || (folder._awid && f.folderId === folder._awid));
-
   const displayName  = user?.name || user?.email?.split('@')[0] || 'User';
   const displayEmail = user?.email || '';
+
+  const pdFiltered = companies.filter(c => !pdCoSearch || (lang === 'en' ? c.en : c.jp || c.en).toLowerCase().includes(pdCoSearch.toLowerCase()));
+  const fdFiltered = companies.filter(c => !fdCoSearch || (lang === 'en' ? c.en : c.jp || c.en).toLowerCase().includes(fdCoSearch.toLowerCase()));
+  const recentFolders = folderRows.filter(f => !folderSearch || (f.en || '').toLowerCase().includes(folderSearch.toLowerCase())).slice(0, 10);
+  const recentFiles   = fileRows.filter(f => !fileSearch || (f.en || '').toLowerCase().includes(fileSearch.toLowerCase())).slice(0, 8);
 
   return (
     <div className="fd-layout">
@@ -35,27 +47,155 @@ export default function FolderDetailPage({
         {!collapsed && <div className="cp-section-label">{t.menu}</div>}
 
         <nav className="cp-nav">
-          <button className="cp-nav-item" title={t.newChat} onClick={() => onNavigate?.('newChat')}>
+          <button className="cp-nav-item" onClick={() => onNavigate?.('newChat')}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
             </svg>
             {!collapsed && t.newChat}
           </button>
-          <button className="cp-nav-item" title={t.notification} onClick={() => onNavigate?.('notification')}>
+
+          <button className="cp-nav-item" onClick={() => onNavigate?.('newFolder')}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-              <polyline points="9 22 9 12 15 12 15 22"/>
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              <line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/>
+            </svg>
+            {!collapsed && t.newFolder}
+          </button>
+
+          <button className="cp-nav-item" onClick={() => onNavigate?.('notification')}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
             {!collapsed && t.notification}
           </button>
-          <button className="cp-nav-item" title={t.companies} onClick={() => onNavigate?.('companies')}>
+
+          <button className="cp-nav-item" onClick={() => onNavigate?.('companies')}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
             </svg>
             {!collapsed && t.companies}
           </button>
+
+          {/* Products */}
+          <button className="cp-nav-item cp-nav-item--expand" onClick={() => { if (!collapsed) { setProductsOpen(o => !o); setPdCoSearch(''); } }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              {!collapsed && t.products}
+            </span>
+            {!collapsed && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: productsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>}
+          </button>
+          {!collapsed && productsOpen && (
+            <div className="np-pd-panel">
+              <div className="np-pd-search-wrap">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input className="np-pd-search" placeholder={t.searchCompany || 'Search company...'} value={pdCoSearch} onChange={e => setPdCoSearch(e.target.value)} />
+              </div>
+              <div className="np-pd-section-label">COMPANY</div>
+              <div className="np-pd-list">
+                {pdFiltered.map(c => (
+                  <button key={c.id} className="np-pd-item" onClick={() => onNavigate?.('companies')}>
+                    <div className="np-pd-item-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></div>
+                    <span className="np-pd-item-name">{lang === 'en' ? c.en : (c.jp || c.en)}</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', flexShrink: 0 }}><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                ))}
+                {pdFiltered.length === 0 && <div className="np-pd-empty">{t.noCompanies || 'No companies'}</div>}
+              </div>
+            </div>
+          )}
+
+          {/* Folders — active */}
+          <button className="cp-nav-item cp-nav-item--expand cp-nav-item--active" onClick={() => { if (!collapsed) { setFoldersOpen(o => !o); setFdCoSearch(''); } }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              {!collapsed && t.folders}
+            </span>
+            {!collapsed && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: foldersOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>}
+          </button>
+          {!collapsed && foldersOpen && (
+            <div className="np-pd-panel">
+              <div className="np-pd-search-wrap">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input className="np-pd-search" placeholder={t.searchCompany || 'Search company...'} value={fdCoSearch} onChange={e => setFdCoSearch(e.target.value)} />
+              </div>
+              <div className="np-pd-section-label">COMPANY</div>
+              <div className="np-pd-list">
+                {fdFiltered.map(c => (
+                  <button key={c.id} className="np-pd-item" onClick={() => onNavigate?.('companies')}>
+                    <div className="np-pd-item-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
+                    <span className="np-pd-item-name">{lang === 'en' ? c.en : (c.jp || c.en)}</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', flexShrink: 0 }}><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                ))}
+                {fdFiltered.length === 0 && <div className="np-pd-empty">{t.noCompanies || 'No companies'}</div>}
+              </div>
+            </div>
+          )}
         </nav>
+
+        {/* Recent Folders */}
+        {!collapsed && (
+          <>
+            <button className="np-section-label cp-section-label--btn" style={{ marginTop: 12 }} onClick={() => setRecentFoldersOpen(o => !o)}>
+              {t.recentFolders}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                style={{ marginLeft: 'auto', transform: recentFoldersOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+            {recentFoldersOpen && (
+              <>
+                <div className="np-folder-search-wrap">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input className="np-folder-search" placeholder={t.searchFolders || 'Search folders...'} value={folderSearch} onChange={e => setFolderSearch(e.target.value)} />
+                </div>
+                <div className="np-folder-list">
+                  {recentFolders.length === 0 && <div style={{ padding: '4px 16px', fontSize: 12, color: '#9098a9' }}>{t.noFoldersYet}</div>}
+                  {recentFolders.map((f, i) => (
+                    <button key={i} className="np-folder-item" onClick={() => onNavigate?.('folders')}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                      {lang === 'en' ? f.en : f.jp}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* Recent Files */}
+            <button className="np-section-label cp-section-label--btn" onClick={() => setRecentFilesOpen(o => !o)}>
+              {t.recentFiles || 'RECENT FILES'}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                style={{ marginLeft: 'auto', transform: recentFilesOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+            {recentFilesOpen && (
+              <>
+                <div className="np-folder-search-wrap">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input className="np-folder-search" placeholder="Search files..." value={fileSearch} onChange={e => setFileSearch(e.target.value)} />
+                </div>
+                <div className="np-folder-list">
+                  {recentFiles.length === 0 && <div style={{ padding: '4px 16px', fontSize: 12, color: '#9098a9' }}>No files yet</div>}
+                  {recentFiles.map((f, i) => (
+                    <button key={i} className="np-folder-item np-file-item">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                      </svg>
+                      <span className="np-file-item-name">{lang === 'en' ? f.en : (f.jp || f.en)}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        )}
 
         {/* Footer */}
         <div className="cp-sidebar-footer">
@@ -94,7 +234,7 @@ export default function FolderDetailPage({
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', transform: langOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
               </div>
-              <div className="cp-version">v1.0.0</div>
+              <div className="cp-version">v1.2.0</div>
             </>
           )}
         </div>
@@ -107,7 +247,7 @@ export default function FolderDetailPage({
         <div className="fd-breadcrumb">
           {companyName && <>
             <div className="fd-bc-item">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               <span>{companyName}</span>
             </div>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -134,7 +274,7 @@ export default function FolderDetailPage({
         </div>
 
         {/* New chat bar */}
-        <div className="fd-new-chat-bar" style={{ cursor: 'pointer' }} onClick={() => onNewChat?.()}>
+        <div className="fd-new-chat-bar" onClick={() => onNewChat?.()}>
           <button className="fd-plus-btn" onClick={e => { e.stopPropagation(); onNewChat?.(); }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </button>
@@ -151,18 +291,24 @@ export default function FolderDetailPage({
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             {t.file || 'File'}
           </button>
+          <button className={`fd-tab${activeTab === 'matrix' ? ' fd-tab--active' : ''}`} onClick={() => setActiveTab('matrix')}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            Matrix
+          </button>
         </div>
 
         <div className="fd-divider" />
 
+        {/* Tab content */}
         {activeTab === 'file' && folderFiles.length > 0 ? (
           <div className="fd-file-list">
             {folderFiles.map(f => (
               <div key={f.id} className="fd-file-row">
                 <div className="fd-file-icon-wrap">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
                   </svg>
                 </div>
                 <div className="fd-file-info">
@@ -173,23 +319,27 @@ export default function FolderDetailPage({
               </div>
             ))}
           </div>
-        ) : activeTab === 'chat' || folderFiles.length === 0 ? (
+        ) : (
           <div className="fd-empty">
             <div className="fd-empty-icon-wrap">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 {activeTab === 'chat'
                   ? <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                  : <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></>
+                  : activeTab === 'matrix'
+                    ? <><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>
+                    : <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></>
                 }
               </svg>
             </div>
-            <p className="fd-empty-text">{activeTab === 'chat' ? (t.noChatsYet || 'No chats yet') : (t.noFilesYet || 'No files yet')}</p>
-            <button className="fd-new-btn">
+            <p className="fd-empty-text">
+              {activeTab === 'chat' ? (t.noChatsYet || 'No chats yet') : activeTab === 'matrix' ? 'No matrices yet' : (t.noFilesYet || 'No files yet')}
+            </p>
+            <button className="fd-new-btn" onClick={() => activeTab === 'chat' && onNewChat?.()}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              {activeTab === 'chat' ? (lang === 'en' ? 'New chat' : '新しいチャット') : (lang === 'en' ? 'Upload file' : 'ファイルをアップロード')}
+              {activeTab === 'chat' ? (lang === 'en' ? 'New chat' : '新しいチャット') : activeTab === 'matrix' ? 'New matrix' : (lang === 'en' ? 'Upload file' : 'ファイルをアップロード')}
             </button>
           </div>
-        ) : null}
+        )}
 
       </main>
     </div>
