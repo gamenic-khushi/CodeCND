@@ -70,11 +70,7 @@ export default function LoginPage({ onLogin }) {
           </button>
         </form>
 
-        <div className="login-demo">
-          <div className="login-demo-title">DEMO CREDENTIALS</div>
-          <code className="login-demo-line">tanaka@example.com</code>
-          <code className="login-demo-line">password</code>
-        </div>
+
       </div>
     </div>
   );
