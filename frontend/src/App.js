@@ -263,6 +263,7 @@ export default function App() {
       onBack={() => { setShowFolderDetail(false); setShowCompanies(true); }}
       onNewChat={() => { setNewChatInitFolder(selectedFolderDetail); setShowFolderDetail(false); setShowNewChat(true); }}
       onAddFile={() => { setAddFileInitFolder(selectedFolderDetail); setShowFolderDetail(false); setShowAddFile(true); }}
+      onOpenMatrix={() => { setShowFolderDetail(false); setShowMatrixGen(true); }}
     />
   );
 
