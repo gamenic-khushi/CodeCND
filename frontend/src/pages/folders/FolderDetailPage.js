@@ -291,7 +291,7 @@ export default function FolderDetailPage({
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             {t.file || 'File'}
           </button>
-          <button className={`fd-tab${activeTab === 'matrix' ? ' fd-tab--active' : ''}`} onClick={() => onOpenMatrix?.()}>
+          <button className={`fd-tab${activeTab === 'matrix' ? ' fd-tab--active' : ''}`} onClick={() => setActiveTab('matrix')}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
             </svg>
@@ -301,47 +301,109 @@ export default function FolderDetailPage({
 
         <div className="fd-divider" />
 
-        {/* Tab content */}
-        {activeTab === 'file' && folderFiles.length > 0 ? (
-          <div className="fd-file-list">
-            {folderFiles.map(f => (
-              <div key={f.id} className="fd-file-row">
-                <div className="fd-file-icon-wrap">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-                  </svg>
-                </div>
-                <div className="fd-file-info">
-                  <span className="fd-file-name">{lang === 'en' ? f.en : (f.jp || f.en)}</span>
-                  <span className="fd-file-ref">{f.refId}</span>
-                </div>
-                <span className="fd-file-type-badge">{f.type}</span>
+        {/* ── Chat tab ── */}
+        {activeTab === 'chat' && (
+          folderFiles.filter(f => f.type === 'Chat').length === 0 ? (
+            <div className="fd-empty">
+              <div className="fd-empty-icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="fd-empty">
-            <div className="fd-empty-icon-wrap">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                {activeTab === 'chat'
-                  ? <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                  : activeTab === 'matrix'
-                    ? <><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>
-                    : <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></>
-                }
-              </svg>
+              <p className="fd-empty-text">{t.noChatsYet || 'No chats yet'}</p>
+              <button className="fd-new-btn" onClick={() => onNewChat?.()}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                {lang === 'en' ? 'New chat' : '新しいチャット'}
+              </button>
             </div>
-            <p className="fd-empty-text">
-              {activeTab === 'chat' ? (t.noChatsYet || 'No chats yet') : activeTab === 'matrix' ? 'No matrices yet' : (t.noFilesYet || 'No files yet')}
-            </p>
-            <button className="fd-new-btn" onClick={() => {
-              if (activeTab === 'chat') onNewChat?.();
-              else if (activeTab === 'file') onAddFile?.();
-            }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              {activeTab === 'chat' ? (lang === 'en' ? 'New chat' : '新しいチャット') : activeTab === 'matrix' ? 'New matrix' : (lang === 'en' ? '+ Add file' : 'ファイルを追加')}
-            </button>
-          </div>
+          ) : (
+            <div className="fd-file-list">
+              {folderFiles.filter(f => f.type === 'Chat').map(f => (
+                <div key={f.id} className="fd-file-row">
+                  <div className="fd-file-icon-wrap">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  </div>
+                  <div className="fd-file-info">
+                    <span className="fd-file-name">{lang === 'en' ? f.en : (f.jp || f.en)}</span>
+                    <span className="fd-file-ref">{f.refId}</span>
+                  </div>
+                  <span className="fd-file-type-badge">{f.type}</span>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+
+        {/* ── File tab ── */}
+        {activeTab === 'file' && (
+          folderFiles.filter(f => f.type !== 'Chat').length === 0 ? (
+            <div className="fd-empty">
+              <div className="fd-empty-icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>
+                </svg>
+              </div>
+              <p className="fd-empty-text">{t.noFilesYet || 'No files yet'}</p>
+              <button className="fd-new-btn" onClick={() => onAddFile?.()}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                {lang === 'en' ? '+ Add file' : 'ファイルを追加'}
+              </button>
+            </div>
+          ) : (
+            <div className="fd-file-list">
+              {folderFiles.filter(f => f.type !== 'Chat').map(f => (
+                <div key={f.id} className="fd-file-row">
+                  <div className="fd-file-icon-wrap">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  </div>
+                  <div className="fd-file-info">
+                    <span className="fd-file-name">{lang === 'en' ? f.en : (f.jp || f.en)}</span>
+                    <span className="fd-file-ref">{f.refId}</span>
+                  </div>
+                  <span className="fd-file-type-badge">{f.type}</span>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+
+        {/* ── Matrix tab ── */}
+        {activeTab === 'matrix' && (
+          folderFiles.length === 0 ? (
+            <div className="fd-empty">
+              <div className="fd-empty-icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                </svg>
+              </div>
+              <p className="fd-empty-text">No matrices yet</p>
+              <button className="fd-new-btn" onClick={() => onOpenMatrix?.()}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Generate matrix
+              </button>
+            </div>
+          ) : (
+            <div className="fd-matrix-list">
+              {folderFiles.map(f => {
+                const name = lang === 'en' ? f.en : (f.jp || f.en);
+                const timeStr = f.savedAt ? new Date(f.savedAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
+                return (
+                  <div key={f.id} className="fd-matrix-item">
+                    <div className="fd-matrix-header">
+                      <span className="fd-matrix-dot" />
+                      <span className="fd-matrix-title">{name}</span>
+                      <span className="fd-matrix-done">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Done
+                      </span>
+                      <span className="fd-matrix-time">{timeStr}</span>
+                    </div>
+                    {f.prompt && <p className="fd-matrix-content">{f.prompt}</p>}
+                  </div>
+                );
+              })}
+            </div>
+          )
         )}
 
       </main>
