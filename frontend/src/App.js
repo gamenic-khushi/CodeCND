@@ -255,7 +255,18 @@ export default function App() {
       initialFolder={newChatInitFolder}
       onLogout={handleLogout}
       onToggleLang={toggleLang}
-      onBack={() => { setNewChatInitFolder(null); setShowNewChat(false); setShowNotification(true); }}
+      onBack={() => {
+        if (newChatInitFolder) {
+          setSelectedFolderDetail(newChatInitFolder);
+          setShowNewChat(false);
+          setShowFolderDetail(true);
+          setNewChatInitFolder(null);
+        } else {
+          setNewChatInitFolder(null);
+          setShowNewChat(false);
+          setShowNotification(true);
+        }
+      }}
       onNavigate={(section) => handleSidebarNavigate(section, setShowNewChat)}
       onSave={(data) => {
         const nums = fileRows.map(f => parseInt((f.refId || '').replace('fa', '')) || 0);
