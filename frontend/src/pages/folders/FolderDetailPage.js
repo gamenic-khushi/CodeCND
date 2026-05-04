@@ -3,7 +3,7 @@ import translations from '../../translations';
 
 export default function FolderDetailPage({
   lang, user, folder, fileRows = [], folderRows = [], companies = [], products = [],
-  onLogout, onToggleLang, onNavigate, onBack, onNewChat,
+  onLogout, onToggleLang, onNavigate, onBack, onNewChat, onAddFile,
 }) {
   const t = translations[lang];
   const [activeTab, setActiveTab]       = useState('chat');
@@ -334,9 +334,12 @@ export default function FolderDetailPage({
             <p className="fd-empty-text">
               {activeTab === 'chat' ? (t.noChatsYet || 'No chats yet') : activeTab === 'matrix' ? 'No matrices yet' : (t.noFilesYet || 'No files yet')}
             </p>
-            <button className="fd-new-btn" onClick={() => activeTab === 'chat' && onNewChat?.()}>
+            <button className="fd-new-btn" onClick={() => {
+              if (activeTab === 'chat') onNewChat?.();
+              else if (activeTab === 'file') onAddFile?.();
+            }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              {activeTab === 'chat' ? (lang === 'en' ? 'New chat' : '新しいチャット') : activeTab === 'matrix' ? 'New matrix' : (lang === 'en' ? 'Add file' : 'ファイルを追加')}
+              {activeTab === 'chat' ? (lang === 'en' ? 'New chat' : '新しいチャット') : activeTab === 'matrix' ? 'New matrix' : (lang === 'en' ? '+ Add file' : 'ファイルを追加')}
             </button>
           </div>
         )}

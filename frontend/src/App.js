@@ -11,6 +11,7 @@ import CompaniesPage     from './pages/companies/CompaniesPage';
 import AddCompanyPage    from './pages/companies/AddCompanyPage';
 import FolderDetailPage        from './pages/folders/FolderDetailPage';
 import MatrixGenerationPage    from './pages/chat/MatrixGenerationPage';
+import AddFilePage             from './pages/files/AddFilePage';
 
 const API = 'http://localhost:5000/api';
 
@@ -32,6 +33,8 @@ export default function App() {
   const [showMatrixGen,    setShowMatrixGen]         = useState(false);
   const [selectedFolderDetail, setSelectedFolderDetail] = useState(null);
   const [newChatInitFolder,    setNewChatInitFolder]    = useState(null);
+  const [showAddFile,          setShowAddFile]          = useState(false);
+  const [addFileInitFolder,    setAddFileInitFolder]    = useState(null);
   const [formData, setFormData]                 = useState(EMPTY_FORM);
   const [companies, setCompanies]               = useState([
     { id: 'co0001', en: 'Company A',               jp: 'カンパニーA' },
@@ -190,10 +193,60 @@ export default function App() {
     fromSetter(false);
     setShowFolderDetail(false);
     setShowMatrixGen(false);
+    setShowAddFile(false);
     if (section === 'notification') { setShowNotification(true); }
     else if (section === 'newChat')  { setShowNewChat(true); }
     else if (section === 'companies') { setShowCompanies(true); }
   }
+
+  if (showAddFile) return (
+    <AddFilePage
+      lang={lang}
+      user={user}
+      folderRows={folderRows}
+      companies={companies}
+      fileRows={fileRows}
+      initialFolder={addFileInitFolder}
+      onLogout={handleLogout}
+      onToggleLang={toggleLang}
+      onNavigate={(section) => handleSidebarNavigate(section, setShowAddFile)}
+      onBack={() => {
+        setShowAddFile(false);
+        if (addFileInitFolder) {
+          setSelectedFolderDetail(addFileInitFolder);
+          setShowFolderDetail(true);
+          setAddFileInitFolder(null);
+        } else {
+          setShowNotification(true);
+        }
+      }}
+      onUpload={({ folderId, files }) => {
+        files.forEach(file => {
+          const nums = fileRows.map(f => parseInt((f.refId || '').replace('fa', '')) || 0);
+          const nextNum = Math.max(0, ...nums) + 1;
+          const newFile = {
+            id: Date.now() + Math.random(),
+            refId: `fa${String(nextNum).padStart(4, '0')}`,
+            type: 'File',
+            folderId: folderId || '',
+            en: file.name,
+            jp: file.name,
+            savedAt: new Date().toISOString(),
+          };
+          setFileRows(prev => [newFile, ...prev]);
+          db.create('files', newFile).catch(dbErr);
+        });
+        setShowAddFile(false);
+        if (addFileInitFolder) {
+          setSelectedFolderDetail(addFileInitFolder);
+          setShowFolderDetail(true);
+          setAddFileInitFolder(null);
+        } else {
+          setShowNotification(true);
+        }
+      }}
+    />
+  );
 
   if (showFolderDetail && selectedFolderDetail) return (
     <FolderDetailPage
@@ -209,6 +262,7 @@ export default function App() {
       onNavigate={(section) => handleSidebarNavigate(section, setShowFolderDetail)}
       onBack={() => { setShowFolderDetail(false); setShowCompanies(true); }}
       onNewChat={() => { setNewChatInitFolder(selectedFolderDetail); setShowFolderDetail(false); setShowNewChat(true); }}
+      onAddFile={() => { setAddFileInitFolder(selectedFolderDetail); setShowFolderDetail(false); setShowAddFile(true); }}
     />
   );
 
