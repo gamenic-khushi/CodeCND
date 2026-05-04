@@ -34,7 +34,8 @@ export default function NotificationPage({ lang, user, folderRows, fileRows, pro
   const [collapsed,         setCollapsed]         = useState(false);
   const [langOpen,          setLangOpen]          = useState(false);
   const [recentFoldersOpen, setRecentFoldersOpen] = useState(true);
-  const [recentFilesOpen,   setRecentFilesOpen]   = useState(false);
+  const [recentFilesOpen,   setRecentFilesOpen]   = useState(true);
+  const [fileSearch,        setFileSearch]        = useState('');
   const [folderSearch,      setFolderSearch]      = useState('');
   const [showNewFolder,     setShowNewFolder]     = useState(false);
   const [newFolderName,     setNewFolderName]     = useState('');
@@ -264,19 +265,28 @@ export default function NotificationPage({ lang, user, folderRows, fileRows, pro
             </svg>
           </button>
           {recentFilesOpen && (
-            <div className="np-folder-list">
-              {(fileRows || []).length === 0 && (
-                <div style={{ padding: '4px 16px', fontSize: 12, color: '#9098a9' }}>{t.noFoldersYet || 'No files yet'}</div>
-              )}
-              {(fileRows || []).slice(0, 8).map((f, i) => (
-                <button key={i} className="np-folder-item">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-                  </svg>
-                  {lang === 'en' ? f.en : (f.jp || f.en)}
-                </button>
-              ))}
-            </div>
+            <>
+              <div className="np-folder-search-wrap">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input className="np-folder-search" placeholder="Search files..." value={fileSearch} onChange={e => setFileSearch(e.target.value)} />
+              </div>
+              <div className="np-folder-list">
+                {(fileRows || []).filter(f => !fileSearch || (f.en || '').toLowerCase().includes(fileSearch.toLowerCase())).length === 0 && (
+                  <div style={{ padding: '4px 16px', fontSize: 12, color: '#9098a9' }}>No files yet</div>
+                )}
+                {(fileRows || [])
+                  .filter(f => !fileSearch || (f.en || '').toLowerCase().includes(fileSearch.toLowerCase()))
+                  .slice(0, 8)
+                  .map((f, i) => (
+                  <button key={i} className="np-folder-item np-file-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span className="np-file-item-name">{lang === 'en' ? f.en : (f.jp || f.en)}</span>
+                  </button>
+                ))}
+              </div>
+            </>
           )}
         </>}
 
