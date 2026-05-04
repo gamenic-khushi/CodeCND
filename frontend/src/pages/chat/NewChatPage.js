@@ -22,7 +22,7 @@ const MODELS = [
   },
 ];
 
-export default function NewChatPage({ lang, user, folders, companies, folderRows, fileRows, onBack, onLogout, onNavigate, onSave, onToggleLang, onMatrixGenerate, onCreateFolder }) {
+export default function NewChatPage({ lang, user, folders, companies, folderRows, fileRows, initialFolder, onBack, onLogout, onNavigate, onSave, onToggleLang, onMatrixGenerate, onCreateFolder }) {
   const t = translations[lang];
   // Sidebar
   const [collapsed,      setCollapsed]      = useState(false);
@@ -39,6 +39,15 @@ export default function NewChatPage({ lang, user, folders, companies, folderRows
   // Chat form
   const [selectedFolder,    setSelectedFolder]    = useState('');
   const [selectedFolderPath,setSelectedFolderPath]= useState('');
+
+  useEffect(() => {
+    if (!initialFolder) return;
+    const compName = lang === 'en' ? (initialFolder.companyEn || '') : (initialFolder.companyJp || initialFolder.companyEn || '');
+    const prodName = lang === 'en' ? (initialFolder.productEn || '') : (initialFolder.productJp || initialFolder.productEn || '');
+    const folName  = lang === 'en' ? (initialFolder.en || '') : (initialFolder.jp || initialFolder.en || '');
+    setSelectedFolder(initialFolder._awid || initialFolder.id || '');
+    setSelectedFolderPath([compName, prodName, folName].filter(Boolean).join(' > '));
+  }, [initialFolder]); // eslint-disable-line react-hooks/exhaustive-deps
   const [chatName,          setChatName]           = useState('');
   const [prompt,            setPrompt]             = useState('');
   const [chatInput,         setChatInput]          = useState('');

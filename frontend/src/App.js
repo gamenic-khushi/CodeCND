@@ -31,6 +31,7 @@ export default function App() {
   const [showFolderDetail, setShowFolderDetail]     = useState(false);
   const [showMatrixGen,    setShowMatrixGen]         = useState(false);
   const [selectedFolderDetail, setSelectedFolderDetail] = useState(null);
+  const [newChatInitFolder,    setNewChatInitFolder]    = useState(null);
   const [formData, setFormData]                 = useState(EMPTY_FORM);
   const [companies, setCompanies]               = useState([
     { id: 'co0001', en: 'Company A',               jp: 'カンパニーA' },
@@ -207,7 +208,7 @@ export default function App() {
       onToggleLang={toggleLang}
       onNavigate={(section) => handleSidebarNavigate(section, setShowFolderDetail)}
       onBack={() => { setShowFolderDetail(false); setShowCompanies(true); }}
-      onNewChat={() => { setShowFolderDetail(false); setShowNewChat(true); }}
+      onNewChat={() => { setNewChatInitFolder(selectedFolderDetail); setShowFolderDetail(false); setShowNewChat(true); }}
     />
   );
 
@@ -251,9 +252,10 @@ export default function App() {
       companies={companies}
       folderRows={folderRows}
       fileRows={fileRows}
+      initialFolder={newChatInitFolder}
       onLogout={handleLogout}
       onToggleLang={toggleLang}
-      onBack={() => { setShowNewChat(false); setShowNotification(true); }}
+      onBack={() => { setNewChatInitFolder(null); setShowNewChat(false); setShowNotification(true); }}
       onNavigate={(section) => handleSidebarNavigate(section, setShowNewChat)}
       onSave={(data) => {
         const nums = fileRows.map(f => parseInt((f.refId || '').replace('fa', '')) || 0);
