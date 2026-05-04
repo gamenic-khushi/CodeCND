@@ -1,19 +1,14 @@
 import { useState } from 'react';
 import translations from '../../translations';
 
+const API = 'http://localhost:5000/api';
+
 const MATRIX_ITEMS = [
   { id: 1, title: 'Banner Copy',      subtitle: 'Write compelling banner copy for the ...', defaultPrompt: 'Write compelling banner copy for the product launch campaign targeting young professionals aged 25–35.' },
   { id: 2, title: 'Visual Direction', subtitle: 'Describe the visual style, color palette,...', defaultPrompt: 'Describe the visual style, color palette, and imagery direction for the campaign materials.' },
   { id: 3, title: 'Target Audience',  subtitle: 'Define the primary and secondary targ...',   defaultPrompt: 'Define the primary and secondary target audiences for this campaign.' },
   { id: 4, title: 'Key Message',      subtitle: 'Craft the core brand message and val...',    defaultPrompt: 'Craft the core brand message and value proposition for the campaign.' },
 ];
-
-const REPLIES = {
-  1: 'Elevate Your Every Day — where innovation meets simplicity. Discover the product that professionals trust to get more done, faster.',
-  2: 'Clean, modern aesthetic with a bold indigo and white palette. Use high-contrast photography showing professionals in motion.',
-  3: 'Primary: urban professionals aged 25–35 with disposable income and a drive for productivity.',
-  4: 'Empowering every ambition — our product removes friction so you can focus on what matters most.',
-};
 
 export default function MatrixGenerationPage({ lang, user, folderRows, companies, onBack, onLogout, onToggleLang, onNavigate }) {
   const t = translations[lang];
@@ -54,28 +49,52 @@ export default function MatrixGenerationPage({ lang, user, folderRows, companies
       : setCheckedItems(new Set(MATRIX_ITEMS.map(i => i.id)));
   }
 
-  function handleGenerate(id) {
+  async function handleGenerate(id) {
     if (generating[id]) return;
     setGenerating(p => ({ ...p, [id]: true }));
-    setTimeout(() => {
-      setOutputs(p => ({ ...p, [id]: REPLIES[id] || REPLIES[1] }));
+    try {
+      const res = await fetch(`${API}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'OpenAI',
+          messages: [{ role: 'user', content: prompts[id] }],
+        }),
+      });
+      const data = await res.json();
+      setOutputs(p => ({ ...p, [id]: data.reply || 'No response received.' }));
+    } catch (err) {
+      setOutputs(p => ({ ...p, [id]: 'Error: ' + (err.message || 'Failed to generate.') }));
+    } finally {
       setGenerating(p => ({ ...p, [id]: false }));
-    }, 800);
+    }
   }
 
-  function handleGenerateAll() {
+  async function handleGenerateAll() {
     if (generatingAll) return;
     const pending = MATRIX_ITEMS.filter(item => !outputs[item.id]);
     if (!pending.length) return;
     setGeneratingAll(true);
-    pending.forEach((item, i) => {
-      setGenerating(p => ({ ...p, [item.id]: true }));
-      setTimeout(() => {
-        setOutputs(p => ({ ...p, [item.id]: REPLIES[item.id] || REPLIES[1] }));
+    pending.forEach(item => setGenerating(p => ({ ...p, [item.id]: true })));
+    await Promise.all(pending.map(async (item) => {
+      try {
+        const res = await fetch(`${API}/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'OpenAI',
+            messages: [{ role: 'user', content: prompts[item.id] }],
+          }),
+        });
+        const data = await res.json();
+        setOutputs(p => ({ ...p, [item.id]: data.reply || 'No response received.' }));
+      } catch (err) {
+        setOutputs(p => ({ ...p, [item.id]: 'Error: ' + (err.message || 'Failed to generate.') }));
+      } finally {
         setGenerating(p => ({ ...p, [item.id]: false }));
-        if (i === pending.length - 1) setGeneratingAll(false);
-      }, 800 + i * 500);
-    });
+      }
+    }));
+    setGeneratingAll(false);
   }
 
   const pdFilteredCompanies = (companies || []).filter(c => {
@@ -346,7 +365,7 @@ export default function MatrixGenerationPage({ lang, user, folderRows, companies
                 />
 
                 <div className="mg-card-section-label">OUTPUT</div>
-                <div className={`mg-card-output${outputs[item.id] ? ' mg-card-output--filled' : ''}`}>
+                <div className={`mg-card-output${outputs[item.id] ? ' mg-card-output--filled' : ''}`} style={{ whiteSpace: 'pre-wrap' }}>
                   {generating[item.id]
                     ? 'Generating…'
                     : (outputs[item.id] || 'No output yet. Click Generate to create content for this section.')}
