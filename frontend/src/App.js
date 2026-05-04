@@ -251,7 +251,22 @@ export default function App() {
       onToggleLang={toggleLang}
       onBack={() => { setShowNewChat(false); setShowNotification(true); }}
       onNavigate={(section) => handleSidebarNavigate(section, setShowNewChat)}
-      onSave={() => { setShowNewChat(false); setShowNotification(true); }}
+      onSave={(data) => {
+        const nums = fileRows.map(f => parseInt((f.refId || '').replace('fa', '')) || 0);
+        const nextNum = Math.max(0, ...nums) + 1;
+        const newFile = {
+          id: Date.now(),
+          refId: `fa${String(nextNum).padStart(4, '0')}`,
+          type: 'Chat',
+          folderId: data.selectedFolder || '',
+          en: data.name,
+          jp: data.name,
+          prompt: data.prompt || '',
+          savedAt: new Date().toISOString(),
+        };
+        setFileRows(prev => [newFile, ...prev]);
+        db.create('files', newFile).catch(dbErr);
+      }}
       onMatrixGenerate={() => { setShowNewChat(false); setShowMatrixGen(true); }}
     />
   );
