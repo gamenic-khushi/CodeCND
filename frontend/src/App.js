@@ -270,6 +270,20 @@ export default function App() {
         setShowNotification(true);
       }}
       onMatrixGenerate={() => { setShowNewChat(false); setShowMatrixGen(true); }}
+      onCreateFolder={({ name, productId }) => {
+        const nums = folderRows.map(f => parseInt((f.id || '').replace('fo', '')) || 0);
+        const newId = `fo${String(Math.max(0, ...nums) + 1).padStart(4, '0')}`;
+        const product = products.find(p => (p._awid || p.id) === productId);
+        const newFolder = {
+          id: newId, en: name, jp: name, productId: productId || '',
+          companyEn: product?.companyEn || '', companyJp: product?.companyJp || '',
+          productEn: product?.en || '', productJp: product?.jp || '',
+        };
+        setFolderRows(prev => [newFolder, ...prev]);
+        db.create('folders', newFolder)
+          .then(saved => setFolderRows(prev => prev.map(f => f.id === newId ? { ...f, _awid: saved._awid } : f)))
+          .catch(dbErr);
+      }}
     />
   );
 

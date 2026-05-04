@@ -22,7 +22,7 @@ const MODELS = [
   },
 ];
 
-export default function NewChatPage({ lang, user, folders, companies, folderRows, fileRows, onBack, onLogout, onNavigate, onSave, onToggleLang, onMatrixGenerate }) {
+export default function NewChatPage({ lang, user, folders, companies, folderRows, fileRows, onBack, onLogout, onNavigate, onSave, onToggleLang, onMatrixGenerate, onCreateFolder }) {
   const t = translations[lang];
   // Sidebar
   const [collapsed,      setCollapsed]      = useState(false);
@@ -860,7 +860,10 @@ export default function NewChatPage({ lang, user, folders, companies, folderRows
             </div>
             <div className="np-modal-footer">
               <button className="np-modal-cancel" onClick={() => setShowNewFolder(false)}>{t.cancel}</button>
-              <button className="np-modal-create" onClick={() => { setShowNewFolder(false); setNewFolderName(''); setNewFolderProduct(''); }}>{t.createFolder}</button>
+              <button className="np-modal-create" onClick={() => {
+                if (newFolderName.trim() && onCreateFolder) onCreateFolder({ name: newFolderName.trim(), productId: newFolderProduct });
+                setShowNewFolder(false); setNewFolderName(''); setNewFolderProduct('');
+              }}>{t.createFolder}</button>
             </div>
           </div>
         </div>
