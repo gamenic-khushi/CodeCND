@@ -200,7 +200,7 @@ export default function AddFilePage({
         </div>
 
         {/* Two-panel body */}
-        <div style={{ display:'flex', flex:1, gap:0, overflow:'hidden' }}>
+        <div style={{ display:'flex', flex:1, gap:20, overflow:'hidden', padding:'20px 24px' }}>
 
           {/* Left panel */}
           <div className="af-left-panel">
@@ -241,7 +241,7 @@ export default function AddFilePage({
 
             {/* Upload Files */}
             <div className="af-section">
-              <div className="af-section-label" style={{ marginBottom:10 }}>Upload Files</div>
+              <div className="af-section-label">Upload Files</div>
               <div
                 className={`af-dropzone${dragOver ? ' af-dropzone--over' : ''}`}
                 onDragOver={e => { e.preventDefault(); setDragOver(true); }}
@@ -265,15 +265,16 @@ export default function AddFilePage({
                 )}
                 <button className="af-browse-btn" onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}>Browse files</button>
               </div>
-
-              <button className="af-upload-btn" onClick={handleUpload} disabled={!files.length}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
-                  <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
-                </svg>
-                Upload
-              </button>
             </div>
+
+            {/* Upload button — outside cards */}
+            <button className="af-upload-btn" onClick={handleUpload} disabled={!files.length}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+                <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+              </svg>
+              Upload
+            </button>
           </div>
 
           {/* Right preview panel */}
