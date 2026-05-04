@@ -189,10 +189,10 @@ export default function AddFilePage({
       </aside>
 
       {/* ── Main ── */}
-      <main className="fd-main" style={{ display:'flex', flexDirection:'column' }}>
+      <main className="fd-main" style={{ display:'flex', flexDirection:'column', alignItems:'stretch', padding:0 }}>
 
         {/* Header */}
-        <div className="mg-header" style={{ borderBottom:'1px solid #f0f1f5', paddingBottom:16, marginBottom:0 }}>
+        <div className="mg-header" style={{ borderBottom:'1px solid #f0f1f5' }}>
           <button className="mg-back-btn" onClick={onBack}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
