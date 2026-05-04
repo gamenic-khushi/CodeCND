@@ -24,7 +24,7 @@ const UPDATES = [
   },
 ];
 
-export default function NotificationPage({ lang, user, folderRows, products, companies, onNavigate, onLogout, onNewChat, onCreateFolder, onToggleLang }) {
+export default function NotificationPage({ lang, user, folderRows, fileRows, products, companies, onNavigate, onLogout, onNewChat, onCreateFolder, onToggleLang }) {
   const t = translations[lang];
 
   const [productsOpen,      setProductsOpen]      = useState(false);
@@ -263,6 +263,21 @@ export default function NotificationPage({ lang, user, folderRows, products, com
               <polyline points="9 18 15 12 9 6"/>
             </svg>
           </button>
+          {recentFilesOpen && (
+            <div className="np-folder-list">
+              {(fileRows || []).length === 0 && (
+                <div style={{ padding: '4px 16px', fontSize: 12, color: '#9098a9' }}>{t.noFoldersYet || 'No files yet'}</div>
+              )}
+              {(fileRows || []).slice(0, 8).map((f, i) => (
+                <button key={i} className="np-folder-item">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                  {lang === 'en' ? f.en : (f.jp || f.en)}
+                </button>
+              ))}
+            </div>
+          )}
         </>}
 
         {/* Footer */}

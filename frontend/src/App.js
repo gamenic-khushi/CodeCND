@@ -266,6 +266,8 @@ export default function App() {
         };
         setFileRows(prev => [newFile, ...prev]);
         db.create('files', newFile).catch(dbErr);
+        setShowNewChat(false);
+        setShowNotification(true);
       }}
       onMatrixGenerate={() => { setShowNewChat(false); setShowMatrixGen(true); }}
     />
@@ -336,6 +338,7 @@ export default function App() {
       user={user}
       companies={companies}
       folderRows={folderRows}
+      fileRows={fileRows}
       products={products}
       onLogout={handleLogout}
       onToggleLang={toggleLang}
