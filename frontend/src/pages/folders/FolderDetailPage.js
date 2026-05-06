@@ -11,7 +11,7 @@ const MATRIX_ITEMS = [
 export default function FolderDetailPage({
   lang, user, folder, fileRows = [], folderRows = [], companies = [], products = [],
   matrixData = {},
-  onLogout, onToggleLang, onNavigate, onBack, onNewChat, onAddFile, onOpenMatrix,
+  onLogout, onToggleLang, onNavigate, onBack, onNewChat, onAddFile, onOpenMatrix, onOpenFolder, onOpenFile,
 }) {
   const t = translations[lang];
   const [activeTab, setActiveTab]       = useState('chat');
@@ -25,6 +25,7 @@ export default function FolderDetailPage({
   const [recentFilesOpen, setRecentFilesOpen]     = useState(true);
   const [folderSearch, setFolderSearch] = useState('');
   const [fileSearch, setFileSearch]     = useState('');
+  const [previewFile, setPreviewFile]   = useState(null);
 
   const folderName  = lang === 'en' ? folder.en  : (folder.jp  || folder.en);
   const companyName = lang === 'en' ? folder.companyEn : (folder.companyJp || folder.companyEn || '');
@@ -37,7 +38,7 @@ export default function FolderDetailPage({
   const pdFiltered = companies.filter(c => !pdCoSearch || (lang === 'en' ? c.en : c.jp || c.en).toLowerCase().includes(pdCoSearch.toLowerCase()));
   const fdFiltered = companies.filter(c => !fdCoSearch || (lang === 'en' ? c.en : c.jp || c.en).toLowerCase().includes(fdCoSearch.toLowerCase()));
   const recentFolders = folderRows.filter(f => !folderSearch || (f.en || '').toLowerCase().includes(folderSearch.toLowerCase())).slice(0, 10);
-  const recentFiles   = fileRows.filter(f => !fileSearch || (f.en || '').toLowerCase().includes(fileSearch.toLowerCase())).slice(0, 8);
+  const recentFiles   = fileRows.filter(f => f.type === 'Chat' && (!fileSearch || (f.en || '').toLowerCase().includes(fileSearch.toLowerCase()))).slice(0, 8);
 
   return (
     <div className="fd-layout">
@@ -166,7 +167,7 @@ export default function FolderDetailPage({
                 <div className="np-folder-list">
                   {recentFolders.length === 0 && <div style={{ padding: '4px 16px', fontSize: 12, color: '#9098a9' }}>{t.noFoldersYet}</div>}
                   {recentFolders.map((f, i) => (
-                    <button key={i} className="np-folder-item" onClick={() => onNavigate?.('folders')}>
+                    <button key={i} className="np-folder-item" onClick={() => onOpenFolder?.(f)}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                       {lang === 'en' ? f.en : f.jp}
                     </button>
@@ -192,7 +193,7 @@ export default function FolderDetailPage({
                 <div className="np-folder-list">
                   {recentFiles.length === 0 && <div style={{ padding: '4px 16px', fontSize: 12, color: '#9098a9' }}>No files yet</div>}
                   {recentFiles.map((f, i) => (
-                    <button key={i} className="np-folder-item np-file-item">
+                    <button key={i} className="np-folder-item np-file-item" onClick={() => onOpenFile?.(f)}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                       </svg>
@@ -354,21 +355,23 @@ export default function FolderDetailPage({
               <p className="fd-empty-text">{t.noFilesYet || 'No files yet'}</p>
               <button className="fd-new-btn" onClick={() => onAddFile?.()}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                {lang === 'en' ? '+ Add file' : 'ファイルを追加'}
+                {lang === 'en' ? 'Add file' : 'ファイルを追加'}
               </button>
             </div>
           ) : (
-            <div className="fd-file-list">
+            <div className="fd-file-grid">
               {folderFiles.filter(f => f.type !== 'Chat').map(f => (
-                <div key={f.id} className="fd-file-row">
-                  <div className="fd-file-icon-wrap">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <div key={f.id} className="fd-file-card" onClick={() => setPreviewFile(f)}>
+                  <div className="fd-file-card-thumb">
+                    {f.thumbnailUrl
+                      ? <img src={f.thumbnailUrl} alt={f.en} className="fd-file-card-img" />
+                      : <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    }
                   </div>
-                  <div className="fd-file-info">
-                    <span className="fd-file-name">{lang === 'en' ? f.en : (f.jp || f.en)}</span>
-                    <span className="fd-file-ref">{f.refId}</span>
+                  <div className="fd-file-card-info">
+                    <span className="fd-file-card-name">{lang === 'en' ? f.en : (f.jp || f.en)}</span>
+                    <span className="fd-file-card-ref">{f.refId}</span>
                   </div>
-                  <span className="fd-file-type-badge">{f.type}</span>
                 </div>
               ))}
             </div>
@@ -380,39 +383,57 @@ export default function FolderDetailPage({
           <div className="fd-matrix-list" style={{ alignSelf: 'stretch' }}>
             {MATRIX_ITEMS.map(item => {
               const result = matrixData[item.id];
-              const isDone = result?.output && !result.output.startsWith('Error:');
+              const isGenerated = result?.output && !result.output.startsWith('Error:');
               const timeStr = result?.generatedAt
                 ? new Date(result.generatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                : '';
+                : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
               return (
                 <div key={item.id} className="fd-matrix-item">
                   <div className="fd-matrix-header">
-                    <span className="fd-matrix-dot" style={{ background: isDone ? '#22c55e' : '#c0c4d0' }} />
+                    <span className="fd-matrix-dot" style={{ background: '#22c55e' }} />
                     <span className="fd-matrix-title">{item.title}</span>
-                    {isDone && (
-                      <span className="fd-matrix-done">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        Done
-                      </span>
-                    )}
+                    <span className="fd-matrix-done">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      Done
+                    </span>
                     {timeStr && <span className="fd-matrix-time">{timeStr}</span>}
                   </div>
-                  <p className="fd-matrix-content" style={!isDone ? { color: '#9098a9' } : {}}>
-                    {isDone ? result.output : item.subtitle}
+                  <p className="fd-matrix-content">
+                    {isGenerated ? result.output : item.subtitle}
                   </p>
                 </div>
               );
             })}
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 8, paddingBottom: 24 }}>
-              <button className="fd-new-btn" onClick={() => onOpenMatrix?.()}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Generate matrix
-              </button>
-            </div>
           </div>
         )}
 
       </main>
+
+      {/* ── File preview modal ── */}
+      {previewFile && (
+        <div className="fd-preview-backdrop" onClick={() => setPreviewFile(null)}>
+          <div className="fd-preview-modal" onClick={e => e.stopPropagation()}>
+            <div className="fd-preview-header">
+              <div>
+                <div className="fd-preview-title">{lang === 'en' ? previewFile.en : (previewFile.jp || previewFile.en)}</div>
+                <div className="fd-preview-ref">{previewFile.refId}</div>
+              </div>
+              <button className="fd-preview-close" onClick={() => setPreviewFile(null)}>×</button>
+            </div>
+            <div className="fd-preview-body">
+              {previewFile.thumbnailUrl
+                ? <img src={previewFile.thumbnailUrl} alt={previewFile.en} className="fd-preview-img" />
+                : (
+                  <div className="fd-preview-placeholder">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <p>No preview available</p>
+                  </div>
+                )
+              }
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

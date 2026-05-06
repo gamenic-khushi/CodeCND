@@ -24,7 +24,7 @@ const UPDATES = [
   },
 ];
 
-export default function NotificationPage({ lang, user, folderRows, fileRows, products, companies, onNavigate, onLogout, onNewChat, onCreateFolder, onToggleLang }) {
+export default function NotificationPage({ lang, user, folderRows, fileRows, products, companies, onNavigate, onLogout, onNewChat, onCreateFolder, onToggleLang, onOpenFolder, onOpenFile }) {
   const t = translations[lang];
 
   const [productsOpen,      setProductsOpen]      = useState(false);
@@ -246,7 +246,7 @@ export default function NotificationPage({ lang, user, folderRows, fileRows, pro
               <div className="np-folder-list">
                 {recentFolders.length === 0 && <div style={{ padding: '4px 16px', fontSize: 12, color: '#9098a9' }}>{t.noFoldersYet}</div>}
                 {recentFolders.map((f, i) => (
-                  <button key={i} className="np-folder-item" onClick={() => onNavigate('folders')}>
+                  <button key={i} className="np-folder-item" onClick={() => onOpenFolder?.(f)}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
                     </svg>
@@ -271,14 +271,14 @@ export default function NotificationPage({ lang, user, folderRows, fileRows, pro
                 <input className="np-folder-search" placeholder="Search files..." value={fileSearch} onChange={e => setFileSearch(e.target.value)} />
               </div>
               <div className="np-folder-list">
-                {(fileRows || []).filter(f => !fileSearch || (f.en || '').toLowerCase().includes(fileSearch.toLowerCase())).length === 0 && (
+                {(fileRows || []).filter(f => f.type === 'Chat' && (!fileSearch || (f.en || '').toLowerCase().includes(fileSearch.toLowerCase()))).length === 0 && (
                   <div style={{ padding: '4px 16px', fontSize: 12, color: '#9098a9' }}>No files yet</div>
                 )}
                 {(fileRows || [])
-                  .filter(f => !fileSearch || (f.en || '').toLowerCase().includes(fileSearch.toLowerCase()))
+                  .filter(f => f.type === 'Chat' && (!fileSearch || (f.en || '').toLowerCase().includes(fileSearch.toLowerCase())))
                   .slice(0, 8)
                   .map((f, i) => (
-                  <button key={i} className="np-folder-item np-file-item">
+                  <button key={i} className="np-folder-item np-file-item" onClick={() => onOpenFile?.(f)}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                     </svg>

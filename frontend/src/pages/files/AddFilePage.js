@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import translations from '../../translations';
 
 export default function AddFilePage({
   lang, user, folderRows = [], companies = [], fileRows = [],
-  initialFolder, onBack, onLogout, onToggleLang, onNavigate, onUpload,
+  initialFolder, onBack, onLogout, onToggleLang, onNavigate, onUpload, onOpenFile,
 }) {
   const t = translations[lang];
   const [collapsed, setCollapsed]   = useState(false);
@@ -13,13 +13,18 @@ export default function AddFilePage({
   const [recentFilesOpen, setRecentFilesOpen] = useState(true);
   const [fileSearch, setFileSearch] = useState('');
 
-  // Folder selection (drill-down simplified to flat for now)
-  const [selectedFolderPath, setSelectedFolderPath] = useState(
-    initialFolder
-      ? [initialFolder.companyEn, initialFolder.productEn, initialFolder.en].filter(Boolean).join(' > ')
-      : ''
-  );
-  const [selectedFolderId, setSelectedFolderId] = useState(initialFolder?._awid || initialFolder?.id || '');
+  // Folder selection
+  const [selectedFolderPath, setSelectedFolderPath] = useState('');
+  const [selectedFolderId, setSelectedFolderId] = useState('');
+
+  useEffect(() => {
+    if (!initialFolder) return;
+    const compName = lang === 'en' ? (initialFolder.companyEn || '') : (initialFolder.companyJp || initialFolder.companyEn || '');
+    const prodName = lang === 'en' ? (initialFolder.productEn || '') : (initialFolder.productJp || initialFolder.productEn || '');
+    const folName  = lang === 'en' ? (initialFolder.en || '') : (initialFolder.jp || initialFolder.en || '');
+    setSelectedFolderPath([compName, prodName, folName].filter(Boolean).join(' > '));
+    setSelectedFolderId(initialFolder._awid || initialFolder.id || '');
+  }, [initialFolder]); // eslint-disable-line react-hooks/exhaustive-deps
   const [folderDropOpen, setFolderDropOpen] = useState(false);
   const [folderSearch, setFolderSearch] = useState('');
 
@@ -33,7 +38,7 @@ export default function AddFilePage({
   const displayEmail = user?.email || '';
 
   const recentFiles = (fileRows || [])
-    .filter(f => !fileSearch || (f.en || '').toLowerCase().includes(fileSearch.toLowerCase()))
+    .filter(f => f.type === 'Chat' && (!fileSearch || (f.en || '').toLowerCase().includes(fileSearch.toLowerCase())))
     .slice(0, 8);
 
   const filteredFolders = (folderRows || []).filter(f =>
@@ -134,7 +139,7 @@ export default function AddFilePage({
                 <div className="np-folder-list">
                   {recentFiles.length === 0 && <div style={{ padding:'4px 16px', fontSize:12, color:'#9098a9' }}>No files yet</div>}
                   {recentFiles.map((f, i) => (
-                    <button key={i} className="np-folder-item np-file-item">
+                    <button key={i} className="np-folder-item np-file-item" onClick={() => onOpenFile?.(f)}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}>
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                       </svg>

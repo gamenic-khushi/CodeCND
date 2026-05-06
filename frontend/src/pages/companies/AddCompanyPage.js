@@ -177,7 +177,7 @@ export default function AddCompanyPage({
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', transform: langOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
               </div>
-              <div className="cp-version">v1.0.0</div>
+              <div className="cp-version">v1.2.0</div>
             </>
           )}
         </div>
