@@ -1,4 +1,4 @@
-import { Client, Databases, Account, Storage, ID, Query } from 'appwrite';
+import { Client, Databases, Account, Storage, Functions, ID, Query } from 'appwrite';
 
 const DB  = process.env.REACT_APP_APPWRITE_DATABASE_ID;
 const COL = {
@@ -13,10 +13,12 @@ const _client = new Client()
   .setEndpoint(process.env.REACT_APP_APPWRITE_ENDPOINT)
   .setProject(process.env.REACT_APP_APPWRITE_PROJECT_ID);
 
-const _databases = new Databases(_client);
-const _account   = new Account(_client);
-const _storage   = new Storage(_client);
-const BUCKET     = process.env.REACT_APP_APPWRITE_BUCKET_ID;
+const _databases  = new Databases(_client);
+const _account    = new Account(_client);
+const _storage    = new Storage(_client);
+const _functions  = new Functions(_client);
+const BUCKET      = process.env.REACT_APP_APPWRITE_BUCKET_ID;
+const FN_ID       = process.env.REACT_APP_APPWRITE_FUNCTION_ID;
 
 export const auth = {
   login: (email, password) =>
@@ -212,5 +214,22 @@ export const db = {
 
   delete: async (col, awid) => {
     await _databases.deleteDocument(DB, COL[col], awid);
+  },
+};
+
+// ── Backend Function calls ────────────────────────────────────────────────
+
+export const fn = {
+  call: async (path, body = {}) => {
+    const exec = await _functions.createExecution(
+      FN_ID,
+      JSON.stringify(body),
+      false,
+      path,
+      'POST',
+      { 'content-type': 'application/json' },
+    );
+    if (exec.status === 'failed') throw new Error('Function execution failed');
+    return JSON.parse(exec.responseBody);
   },
 };

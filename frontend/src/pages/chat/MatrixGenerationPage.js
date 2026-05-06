@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import translations from '../../translations';
-
-const API = 'http://localhost:5000/api';
+import { fn } from '../../appwrite';
 
 const MATRIX_ITEMS = [
   { id: 1, title: 'Banner Copy',      subtitle: 'Write compelling banner copy for the ...', defaultPrompt: 'Write compelling banner copy for the product launch campaign targeting young professionals aged 25–35.' },
@@ -10,7 +9,7 @@ const MATRIX_ITEMS = [
   { id: 4, title: 'Key Message',      subtitle: 'Craft the core brand message and val...',    defaultPrompt: 'Craft the core brand message and value proposition for the campaign.' },
 ];
 
-export default function MatrixGenerationPage({ lang, user, folderRows, companies, onBack, onLogout, onToggleLang, onNavigate, onSaveMatrix }) {
+export default function MatrixGenerationPage({ lang, user, folderRows, fileRows = [], companies, onBack, onLogout, onToggleLang, onNavigate, onSaveMatrix, onOpenFile }) {
   const t = translations[lang];
 
   // Sidebar
@@ -21,6 +20,8 @@ export default function MatrixGenerationPage({ lang, user, folderRows, companies
   const [pdCoSearch,      setPdCoSearch]      = useState('');
   const [fdCoSearch,      setFdCoSearch]      = useState('');
   const [recentOpen,      setRecentOpen]      = useState(true);
+  const [recentFilesOpen, setRecentFilesOpen] = useState(true);
+  const [fileSearch,      setFileSearch]      = useState('');
   const [folderSearch,    setFolderSearch]    = useState('');
 
   // Matrix
@@ -50,16 +51,11 @@ export default function MatrixGenerationPage({ lang, user, folderRows, companies
   }
 
   async function callGPT(prompt) {
-    const res = await fetch(`${API}/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'OpenAI',
-        messages: [{ role: 'user', content: prompt }],
-      }),
+    const data = await fn.call('/chat', {
+      model: 'OpenAI',
+      messages: [{ role: 'user', content: prompt }],
     });
-    const data = await res.json();
-    if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
+    if (data.error) throw new Error(data.error);
     return data.reply;
   }
 
@@ -247,6 +243,35 @@ export default function MatrixGenerationPage({ lang, user, folderRows, companies
                 </div>
               </>
             )}
+
+            <button className="np-section-label cp-section-label--btn" onClick={() => setRecentFilesOpen(o => !o)}>
+              {t.recentFiles || 'RECENT FILES'}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                style={{ marginLeft: 'auto', transform: recentFilesOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+            {recentFilesOpen && (
+              <>
+                <div className="np-folder-search-wrap">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input className="np-folder-search" placeholder="Search files..." value={fileSearch} onChange={e => setFileSearch(e.target.value)} />
+                </div>
+                <div className="np-folder-list">
+                  {(fileRows).filter(f => f.type === 'Chat' && (!fileSearch || (f.en || '').toLowerCase().includes(fileSearch.toLowerCase()))).length === 0 && (
+                    <div style={{ padding: '4px 16px', fontSize: 12, color: '#9098a9' }}>No files yet</div>
+                  )}
+                  {(fileRows).filter(f => f.type === 'Chat' && (!fileSearch || (f.en || '').toLowerCase().includes(fileSearch.toLowerCase()))).slice(0, 8).map((f, i) => (
+                    <button key={i} className="np-folder-item np-file-item" onClick={() => onOpenFile?.(f)}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                      </svg>
+                      <span className="np-file-item-name">{lang === 'en' ? f.en : (f.jp || f.en)}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </>
         )}
 
@@ -336,9 +361,11 @@ export default function MatrixGenerationPage({ lang, user, folderRows, companies
 
             <div className="mg-list-footer">
               <button className="mg-generate-all-btn" onClick={handleGenerateAll} disabled={generatingAll}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C11.4 6.8 10.2 8.6 6 9.5C10.2 10.4 11.4 12.2 12 17C12.6 12.2 13.8 10.4 18 9.5C13.8 8.6 12.6 6.8 12 2Z"/>
-                  <path d="M5 2C4.7 4.2 4.1 5.1 2 5.5C4.1 5.9 4.7 6.8 5 9C5.3 6.8 5.9 5.9 8 5.5C5.9 5.1 5.3 4.2 5 2Z"/>
+                <svg width="16" height="16" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="0.9375" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6.88566 1.75878C6.91244 1.61541 6.98852 1.48592 7.10072 1.39273C7.21292 1.29955 7.35418 1.24854 7.50003 1.24854C7.64588 1.24854 7.78714 1.29955 7.89935 1.39273C8.01155 1.48592 8.08763 1.61541 8.11441 1.75878L8.77128 5.23253C8.81794 5.4795 8.93795 5.70667 9.11568 5.88439C9.2934 6.06211 9.52056 6.18213 9.76753 6.22878L13.2413 6.88566C13.3847 6.91244 13.5141 6.98852 13.6073 7.10072C13.7005 7.21292 13.7515 7.35418 13.7515 7.50003C13.7515 7.64588 13.7005 7.78714 13.6073 7.89935C13.5141 8.01155 13.3847 8.08763 13.2413 8.11441L9.76753 8.77128C9.52056 8.81794 9.2934 8.93795 9.11568 9.11568C8.93795 9.2934 8.81794 9.52056 8.77128 9.76753L8.11441 13.2413C8.08763 13.3847 8.01155 13.5141 7.89935 13.6073C7.78714 13.7005 7.64588 13.7515 7.50003 13.7515C7.35418 13.7515 7.21292 13.7005 7.10072 13.6073C6.98852 13.5141 6.91244 13.3847 6.88566 13.2413L6.22878 9.76753C6.18213 9.52056 6.06211 9.2934 5.88439 9.11568C5.70667 8.93795 5.4795 8.81794 5.23253 8.77128L1.75878 8.11441C1.61541 8.08763 1.48592 8.01155 1.39273 7.89935C1.29955 7.78714 1.24854 7.64588 1.24854 7.50003C1.24854 7.35418 1.29955 7.21292 1.39273 7.10072C1.48592 6.98852 1.61541 6.91244 1.75878 6.88566L5.23253 6.22878C5.4795 6.18213 5.70667 6.06211 5.88439 5.88439C6.06211 5.70667 6.18213 5.4795 6.22878 5.23253L6.88566 1.75878Z"/>
+                  <path d="M12.5 1.25V3.75"/>
+                  <path d="M13.75 2.5H11.25"/>
+                  <path d="M2.5 13.75C3.19036 13.75 3.75 13.1904 3.75 12.5C3.75 11.8096 3.19036 11.25 2.5 11.25C1.80964 11.25 1.25 11.8096 1.25 12.5C1.25 13.1904 1.80964 13.75 2.5 13.75Z"/>
                 </svg>
                 {generatingAll ? 'Generating...' : 'Generate All'}
               </button>

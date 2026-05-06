@@ -3,7 +3,7 @@ import './App.css';
 import translations from './translations';
 import { INITIAL_FILE_ROWS, INITIAL_PR_ROWS, INITIAL_PRODUCTS, INITIAL_FOLDERS, EMPTY_FORM } from './data';
 
-import { db, auth } from './appwrite';
+import { db, auth, fn } from './appwrite';
 import LoginPage from './pages/auth/LoginPage';
 import NotificationPage  from './pages/notifications/NotificationPage';
 import NewChatPage       from './pages/chat/NewChatPage';
@@ -13,7 +13,6 @@ import FolderDetailPage        from './pages/folders/FolderDetailPage';
 import MatrixGenerationPage    from './pages/chat/MatrixGenerationPage';
 import AddFilePage             from './pages/files/AddFilePage';
 
-const API = 'http://localhost:5000/api';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -33,6 +32,7 @@ export default function App() {
   const [showMatrixGen,    setShowMatrixGen]         = useState(false);
   const [selectedFolderDetail, setSelectedFolderDetail] = useState(null);
   const [newChatInitFolder,    setNewChatInitFolder]    = useState(null);
+  const [newChatInitName,      setNewChatInitName]      = useState('');
   const [showAddFile,          setShowAddFile]          = useState(false);
   const [addFileInitFolder,    setAddFileInitFolder]    = useState(null);
   const [matrixData,           setMatrixData]           = useState({});
@@ -154,13 +154,7 @@ export default function App() {
 
   async function translateToJp(texts) {
     try {
-      const res = await fetch(`${API}/translate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ texts }),
-      });
-      if (!res.ok) return null;
-      const d = await res.json();
+      const d = await fn.call('/translate', { texts });
       return d.translated || null;
     } catch { return null; }
   }
@@ -222,10 +216,18 @@ export default function App() {
           setShowNotification(true);
         }
       }}
+      onOpenFile={(f) => {
+        const parentFolder = folderRows.find(fr => fr._awid === f.folderId || fr.id === f.folderId);
+        setNewChatInitFolder(parentFolder || null);
+        setNewChatInitName(lang === 'en' ? f.en : (f.jp || f.en));
+        setShowAddFile(false);
+        setShowNewChat(true);
+      }}
       onUpload={({ folderId, files }) => {
         files.forEach(file => {
           const nums = fileRows.map(f => parseInt((f.refId || '').replace('fa', '')) || 0);
           const nextNum = Math.max(0, ...nums) + 1;
+          const thumbnailUrl = file.type.startsWith('image/') ? URL.createObjectURL(file) : null;
           const newFile = {
             id: Date.now() + Math.random(),
             refId: `fa${String(nextNum).padStart(4, '0')}`,
@@ -233,6 +235,7 @@ export default function App() {
             folderId: folderId || '',
             en: file.name,
             jp: file.name,
+            thumbnailUrl,
             savedAt: new Date().toISOString(),
           };
           setFileRows(prev => [newFile, ...prev]);
@@ -267,6 +270,14 @@ export default function App() {
       onNewChat={() => { setNewChatInitFolder(selectedFolderDetail); setShowFolderDetail(false); setShowNewChat(true); }}
       onAddFile={() => { setAddFileInitFolder(selectedFolderDetail); setShowFolderDetail(false); setShowAddFile(true); }}
       onOpenMatrix={() => { setMatrixGenFolder(selectedFolderDetail); setShowFolderDetail(false); setShowMatrixGen(true); }}
+      onOpenFolder={(f) => { setSelectedFolderDetail(f); }}
+      onOpenFile={(f) => {
+        const parentFolder = folderRows.find(fr => fr._awid === f.folderId || fr.id === f.folderId) || selectedFolderDetail;
+        setNewChatInitFolder(parentFolder);
+        setNewChatInitName(lang === 'en' ? f.en : (f.jp || f.en));
+        setShowFolderDetail(false);
+        setShowNewChat(true);
+      }}
     />
   );
 
@@ -306,6 +317,14 @@ export default function App() {
           setShowNewChat(true);
         }
       }}
+      fileRows={fileRows}
+      onOpenFile={(f) => {
+        const parentFolder = folderRows.find(fr => fr._awid === f.folderId || fr.id === f.folderId);
+        setNewChatInitFolder(parentFolder || null);
+        setNewChatInitName(lang === 'en' ? f.en : (f.jp || f.en));
+        setShowMatrixGen(false);
+        setShowNewChat(true);
+      }}
       onNavigate={(section) => handleSidebarNavigate(section, setShowMatrixGen)}
       onSaveMatrix={(outputs, prompts) => {
         const folderId = matrixGenFolder?._awid || matrixGenFolder?.id;
@@ -329,6 +348,7 @@ export default function App() {
       folderRows={folderRows}
       fileRows={fileRows}
       initialFolder={newChatInitFolder}
+      initialName={newChatInitName}
       onLogout={handleLogout}
       onToggleLang={toggleLang}
       onBack={() => {
@@ -337,8 +357,10 @@ export default function App() {
           setShowNewChat(false);
           setShowFolderDetail(true);
           setNewChatInitFolder(null);
+          setNewChatInitName('');
         } else {
           setNewChatInitFolder(null);
+          setNewChatInitName('');
           setShowNewChat(false);
           setShowNotification(true);
         }
@@ -473,6 +495,18 @@ export default function App() {
       }}
       onNewFolder={() => { setShowNotification(false); setShowCompanies(false); setShowNotification(true); }}
       onNavigate={(section) => handleSidebarNavigate(section, setShowNotification)}
+      onOpenFolder={(f) => {
+        setSelectedFolderDetail(f);
+        setShowNotification(false);
+        setShowFolderDetail(true);
+      }}
+      onOpenFile={(f) => {
+        const parentFolder = folderRows.find(fr => fr._awid === f.folderId || fr.id === f.folderId);
+        setNewChatInitFolder(parentFolder || null);
+        setNewChatInitName(lang === 'en' ? f.en : (f.jp || f.en));
+        setShowNotification(false);
+        setShowNewChat(true);
+      }}
     />
   );
 
