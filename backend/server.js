@@ -125,7 +125,7 @@ app.post('/api/chat', async (req, res) => {
     console.error('Chat API Error:', error.message);
     res.status(500).json({ error: error.message || 'Something went wrong' });
   }
-});1
+});
 
 // ✅ Translate text to Japanese
 app.post('/api/translate', async (req, res) => {
