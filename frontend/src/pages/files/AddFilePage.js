@@ -1,8 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import translations from '../../translations';
+import { CompanyIcon, ProductIcon, FolderIcon, FileIcon, ChatIcon } from '../../icons';
+import '../companies/CompaniesPage.css';
+import '../chat/MatrixGenerationPage.css';
+import '../folders/FolderDetailPage.css';
+import '../../components/modals.css';
 
 export default function AddFilePage({
-  lang, user, folderRows = [], companies = [], fileRows = [],
+  lang, user, folderRows = [], companies = [], products = [], fileRows = [],
   initialFolder, onBack, onLogout, onToggleLang, onNavigate, onUpload, onOpenFile,
 }) {
   const t = translations[lang];
@@ -27,6 +32,11 @@ export default function AddFilePage({
   }, [initialFolder]); // eslint-disable-line react-hooks/exhaustive-deps
   const [folderDropOpen, setFolderDropOpen] = useState(false);
   const [folderSearch, setFolderSearch] = useState('');
+  const [fdStep,         setFdStep]         = useState('company');
+  const [fdDropCompany,  setFdDropCompany]  = useState(null);
+  const [fdDropProduct,  setFdDropProduct]  = useState(null);
+  const [fdProductSearch,setFdProductSearch]= useState('');
+  const [fdFolderSearch, setFdFolderSearch] = useState('');
 
   // File upload
   const [dragOver, setDragOver]     = useState(false);
@@ -41,9 +51,24 @@ export default function AddFilePage({
     .filter(f => f.type === 'Chat' && (!fileSearch || (f.en || '').toLowerCase().includes(fileSearch.toLowerCase())))
     .slice(0, 8);
 
-  const filteredFolders = (folderRows || []).filter(f =>
-    !folderSearch || (f.en || '').toLowerCase().includes(folderSearch.toLowerCase())
-  );
+  const fdFilteredCompanies = (companies || []).filter(c => {
+    const name = lang === 'en' ? c.en : (c.jp || c.en);
+    return !folderSearch || name.toLowerCase().includes(folderSearch.toLowerCase());
+  });
+  const fdCompanyProducts = fdDropCompany
+    ? (products || []).filter(p => {
+        const enMatch = p.companyEn && fdDropCompany.en && p.companyEn.toLowerCase() === fdDropCompany.en.toLowerCase();
+        const idMatch = p.companyId && (p.companyId === fdDropCompany._awid || p.companyId === fdDropCompany.id);
+        return enMatch || idMatch;
+      }).filter(p => !fdProductSearch || (p.en || '').toLowerCase().includes(fdProductSearch.toLowerCase()))
+    : [];
+  const fdCompanyFolders = (fdDropCompany && fdDropProduct)
+    ? (folderRows || []).filter(f => {
+        const cMatch = f.companyEn && fdDropCompany.en && f.companyEn.toLowerCase() === fdDropCompany.en.toLowerCase();
+        const pMatch = f.productEn && fdDropProduct.en && f.productEn.toLowerCase() === fdDropProduct.en.toLowerCase();
+        return cMatch && pMatch;
+      }).filter(f => !fdFolderSearch || (f.en || '').toLowerCase().includes(fdFolderSearch.toLowerCase()))
+    : [];
 
   function handleFiles(newFiles) {
     const arr = Array.from(newFiles);
@@ -89,7 +114,7 @@ export default function AddFilePage({
         {!collapsed && <div className="cp-section-label">{t.menu}</div>}
         <nav className="cp-nav">
           <button className="cp-nav-item" onClick={() => onNavigate?.('newChat')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <ChatIcon size={16} />
             {!collapsed && t.newChat}
           </button>
           <button className="cp-nav-item" onClick={() => onNavigate?.('newFolder')}>
@@ -101,19 +126,19 @@ export default function AddFilePage({
             {!collapsed && t.notification}
           </button>
           <button className="cp-nav-item" onClick={() => onNavigate?.('companies')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <CompanyIcon size={16} />
             {!collapsed && t.companies}
           </button>
           <button className="cp-nav-item cp-nav-item--expand" onClick={() => !collapsed && setProductsOpen(o => !o)}>
             <span style={{ display:'flex', alignItems:'center', gap:10 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+              <ProductIcon size={16} />
               {!collapsed && t.products}
             </span>
             {!collapsed && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: productsOpen?'rotate(180deg)':'none', transition:'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>}
           </button>
           <button className="cp-nav-item cp-nav-item--expand" onClick={() => !collapsed && setFoldersOpen(o => !o)}>
             <span style={{ display:'flex', alignItems:'center', gap:10 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              <FolderIcon size={16} />
               {!collapsed && t.folders}
             </span>
             {!collapsed && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: foldersOpen?'rotate(180deg)':'none', transition:'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>}
@@ -140,9 +165,7 @@ export default function AddFilePage({
                   {recentFiles.length === 0 && <div style={{ padding:'4px 16px', fontSize:12, color:'#9098a9' }}>No files yet</div>}
                   {recentFiles.map((f, i) => (
                     <button key={i} className="np-folder-item np-file-item" onClick={() => onOpenFile?.(f)}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}>
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                      </svg>
+                      <ChatIcon size={14} />
                       <span className="np-file-item-name">{lang === 'en' ? f.en : (f.jp || f.en)}</span>
                     </button>
                   ))}
@@ -213,11 +236,11 @@ export default function AddFilePage({
             {/* Folder List */}
             <div className="af-section">
               <div className="af-section-label">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <FolderIcon size={13} />
                 Folder List
               </div>
               <div style={{ position:'relative' }}>
-                <button className="af-folder-trigger" onClick={() => setFolderDropOpen(o => !o)}>
+                <button className="af-folder-trigger" onClick={() => { setFolderDropOpen(o => { if (o) { setFdStep('company'); setFdDropCompany(null); setFdDropProduct(null); setFolderSearch(''); setFdProductSearch(''); setFdFolderSearch(''); } return !o; }); }}>
                   <span style={{ color: selectedFolderPath ? '#3a3f5c' : '#b0b8cc', fontSize:13 }}>
                     {selectedFolderPath || 'Select folder...'}
                   </span>
@@ -228,17 +251,62 @@ export default function AddFilePage({
                 </button>
                 {folderDropOpen && (
                   <div className="af-folder-menu">
-                    <div className="np-folder-search-wrap" style={{ padding:'8px 10px 4px' }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                      <input className="np-folder-search" placeholder="Search folders..." value={folderSearch} onChange={e => setFolderSearch(e.target.value)} autoFocus />
-                    </div>
-                    {filteredFolders.map((f, i) => (
-                      <button key={i} className="af-folder-option" onClick={() => selectFolder(f)}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                        <span>{lang==='en' ? f.en : (f.jp || f.en)}</span>
+                    {fdStep === 'company' && (<>
+                      <div className="np-folder-search-wrap" style={{ padding: '8px 10px 4px' }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input className="np-folder-search" placeholder="Search company..." value={folderSearch} onChange={e => setFolderSearch(e.target.value)} autoFocus />
+                      </div>
+                      <div style={{ padding: '4px 12px 2px', fontSize: 11, fontWeight: 600, color: '#9098a9', letterSpacing: '0.06em' }}>COMPANY</div>
+                      {fdFilteredCompanies.map((c, i) => (
+                        <button key={i} className="af-folder-option" onClick={() => { setFdDropCompany(c); setFdStep('product'); setFdProductSearch(''); }}>
+                          <CompanyIcon size={13} stroke="#6366f1" />
+                          <span style={{ flex: 1 }}>{lang === 'en' ? c.en : (c.jp || c.en)}</span>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                      ))}
+                      {fdFilteredCompanies.length === 0 && <div style={{ padding: '8px 12px', fontSize: 12, color: '#9098a9' }}>No companies found</div>}
+                    </>)}
+
+                    {fdStep === 'product' && (<>
+                      <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', color: '#6366f1', fontSize: 13, fontWeight: 600, width: '100%' }}
+                        onClick={() => { setFdStep('company'); setFolderSearch(''); }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                        {lang === 'en' ? fdDropCompany?.en : (fdDropCompany?.jp || fdDropCompany?.en)}
                       </button>
-                    ))}
-                    {filteredFolders.length === 0 && <div style={{ padding:'8px 12px', fontSize:12, color:'#9098a9' }}>No folders found</div>}
+                      <div className="np-folder-search-wrap" style={{ padding: '4px 10px' }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input className="np-folder-search" placeholder="Search product..." value={fdProductSearch} onChange={e => setFdProductSearch(e.target.value)} autoFocus />
+                      </div>
+                      <div style={{ padding: '4px 12px 2px', fontSize: 11, fontWeight: 600, color: '#9098a9', letterSpacing: '0.06em' }}>PRODUCT</div>
+                      {fdCompanyProducts.map((p, i) => (
+                        <button key={i} className="af-folder-option" onClick={() => { setFdDropProduct(p); setFdStep('folder'); setFdFolderSearch(''); }}>
+                          <ProductIcon size={13} stroke="#6366f1" />
+                          <span style={{ flex: 1 }}>{lang === 'en' ? p.en : (p.jp || p.en)}</span>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                      ))}
+                      {fdCompanyProducts.length === 0 && <div style={{ padding: '8px 12px', fontSize: 12, color: '#9098a9' }}>No products found</div>}
+                    </>)}
+
+                    {fdStep === 'folder' && (<>
+                      <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', color: '#6366f1', fontSize: 13, fontWeight: 600, width: '100%' }}
+                        onClick={() => { setFdStep('product'); setFdProductSearch(''); }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                        {lang === 'en' ? fdDropProduct?.en : (fdDropProduct?.jp || fdDropProduct?.en)}
+                      </button>
+                      <div className="np-folder-search-wrap" style={{ padding: '4px 10px' }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input className="np-folder-search" placeholder="Search folder..." value={fdFolderSearch} onChange={e => setFdFolderSearch(e.target.value)} autoFocus />
+                      </div>
+                      <div style={{ padding: '4px 12px 2px', fontSize: 11, fontWeight: 600, color: '#9098a9', letterSpacing: '0.06em' }}>FOLDER</div>
+                      {fdCompanyFolders.map((f, i) => (
+                        <button key={i} className="af-folder-option" onClick={() => selectFolder(f)}>
+                          <FolderIcon size={13} />
+                          <span>{lang === 'en' ? f.en : (f.jp || f.en)}</span>
+                        </button>
+                      ))}
+                      {fdCompanyFolders.length === 0 && <div style={{ padding: '8px 12px', fontSize: 12, color: '#9098a9' }}>No folders found</div>}
+                    </>)}
                   </div>
                 )}
               </div>

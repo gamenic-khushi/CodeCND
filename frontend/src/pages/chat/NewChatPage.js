@@ -1,5 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import translations from '../../translations';
+import { CompanyIcon, ProductIcon, FolderIcon } from '../../icons';
+import Sidebar from '../../components/Sidebar';
+import './NewChatPage.css';
+import '../../components/modals.css';
 
 const MODELS = [
   {
@@ -22,19 +26,8 @@ const MODELS = [
   },
 ];
 
-export default function NewChatPage({ lang, user, folders, companies, folderRows, fileRows, initialFolder, initialName, onBack, onLogout, onNavigate, onSave, onToggleLang, onMatrixGenerate, onCreateFolder }) {
+export default function NewChatPage({ lang, user, folders, companies, products = [], folderRows, fileRows, initialFolder, initialName, onBack, onLogout, onNavigate, onSave, onToggleLang, onMatrixGenerate, onCreateFolder }) {
   const t = translations[lang];
-  // Sidebar
-  const [collapsed,      setCollapsed]      = useState(false);
-  const [productsOpen,   setProductsOpen]   = useState(false);
-  const [foldersOpen,    setFoldersOpen]     = useState(false);
-  const [fdCoSearch,     setFdCoSearch]      = useState('');
-  const [folderSearch,    setFolderSearch]    = useState('');
-  const [companySearch,   setCompanySearch]   = useState('');
-  const [langOpen,        setLangOpen]        = useState(false);
-  const [showNewFolder,   setShowNewFolder]   = useState(false);
-  const [newFolderName,   setNewFolderName]   = useState('');
-  const [newFolderProduct,setNewFolderProduct]= useState('');
 
   // Chat form
   const [selectedFolder,    setSelectedFolder]    = useState('');
@@ -149,30 +142,20 @@ export default function NewChatPage({ lang, user, folders, companies, folderRows
 
   const selectedModelObj = MODELS.find(m => m.id === model) || MODELS[0];
 
-  const displayName  = user?.name || user?.email?.split('@')[0] || 'User';
-  const displayEmail = user?.email || '';
-
-  const recentFolders = (folderRows || [])
-    .filter(f => (f.en || '').toLowerCase().includes(folderSearch.toLowerCase()))
-    .slice(0, 10);
-
-  const filteredCompanies = (companies || [])
-    .filter(c => (lang === 'en' ? c.en : c.jp || c.en || '').toLowerCase().includes(companySearch.toLowerCase()));
-
-  const fdFilteredCompanies = (companies || [])
-    .filter(c => (lang === 'en' ? c.en : c.jp || c.en || '').toLowerCase().includes(fdCoSearch.toLowerCase()));
-
   // Derive unique companies that have folders
   const folderData = folders || [];
   const companyNames = [...new Set(folderData.map(f => f.companyEn || '').filter(Boolean))];
   const allCompanies = (companies || []).length > 0
-    ? (companies || []).filter(c => companyNames.includes(c.en) || folderData.some(f => f.companyEn === c.en))
+    ? (companies || [])
     : companyNames.map(name => ({ en: name, jp: name }));
 
   // Products under selected drill company
   const drillProducts = drillCompany
-    ? [...new Set(folderData.filter(f => f.companyEn === drillCompany.en && (f.productEn || '')).map(f => f.productEn))]
-        .map(pEn => ({ en: pEn, jp: folderData.find(f => f.productEn === pEn)?.productJp || pEn }))
+    ? (products || []).filter(p =>
+        (drillCompany._awid && p.companyId === drillCompany._awid) ||
+        (drillCompany.id && p.companyId === drillCompany.id) ||
+        (p.companyEn && p.companyEn.toLowerCase() === drillCompany.en?.toLowerCase())
+      )
     : [];
 
   // Folders under selected drill company + product
@@ -215,256 +198,20 @@ export default function NewChatPage({ lang, user, folders, companies, folderRows
     <div className="ncp-layout">
 
       {/* ── Sidebar ── */}
-      <aside className={`ncp-sidebar${collapsed ? ' ncp-sidebar--collapsed' : ''}`}>
-
-        {/* Header */}
-        <div className="ncp-sidebar-header">
-          {!collapsed && <span className="ncp-sidebar-brand">ChatCND</span>}
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            style={{ cursor: 'pointer', flexShrink: 0 }} onClick={() => setCollapsed(c => !c)}>
-            <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/>
-          </svg>
-        </div>
-
-        {!collapsed && <div className="ncp-section-label">{t.menu}</div>}
-
-        <nav className="ncp-nav">
-
-          {/* New chat — ACTIVE */}
-          <button className="ncp-nav-item ncp-nav-item--active" title={t.newChat}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-            {!collapsed && t.newChat}
-          </button>
-
-          {/* New Folder */}
-          <button className="ncp-nav-item" title={t.newFolder} onClick={() => setShowNewFolder(true)}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-              <line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/>
-            </svg>
-            {!collapsed && t.newFolder}
-          </button>
-
-          {/* Notification */}
-          <button className="ncp-nav-item" title={t.notification} onClick={() => onNavigate('notification')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-              <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-            {!collapsed && t.notification}
-          </button>
-
-          {/* Companies */}
-          <button className="ncp-nav-item" title={t.companies} onClick={() => onNavigate('companies')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-            </svg>
-            {!collapsed && t.companies}
-          </button>
-
-          {/* Products — expandable with company list */}
-          <button className="ncp-nav-item ncp-nav-item--expand" title={t.products} onClick={() => !collapsed && setProductsOpen(o => !o)}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                <line x1="12" y1="22.08" x2="12" y2="12"/>
-              </svg>
-              {!collapsed && t.products}
-            </span>
-            {!collapsed && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: productsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>}
-          </button>
-
-          {!collapsed && productsOpen && (
-            <div className="ncp-company-panel">
-              <div className="ncp-company-search-wrap">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-                <input
-                  className="ncp-company-search"
-                  type="text"
-                  placeholder={t.searchCompany}
-                  value={companySearch}
-                  onChange={e => setCompanySearch(e.target.value)}
-                />
-              </div>
-              <div className="ncp-section-label" style={{ padding: '8px 16px 4px' }}>{t.company2}</div>
-              <div className="ncp-company-list">
-                {filteredCompanies.map((c, i) => (
-                  <button key={i} className="ncp-company-item" onClick={() => onNavigate('companies')}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"/>
-                    </svg>
-                    <span>{lang === 'en' ? c.en : (c.jp || c.en)}</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}>
-                      <polyline points="9 18 15 12 9 6"/>
-                    </svg>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Folders */}
-          <button className="ncp-nav-item ncp-nav-item--expand" title={t.folders} onClick={() => { if (!collapsed) { setFoldersOpen(o => !o); setFdCoSearch(''); } }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-              </svg>
-              {!collapsed && t.folders}
-            </span>
-            {!collapsed && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: foldersOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>}
-          </button>
-
-          {!collapsed && foldersOpen && (
-            <div className="ncp-company-panel">
-              <div className="ncp-company-search-wrap">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input
-                  className="ncp-company-search"
-                  placeholder={t.searchCompany || 'Search company...'}
-                  value={fdCoSearch}
-                  onChange={e => setFdCoSearch(e.target.value)}
-                />
-              </div>
-              <div className="ncp-section-label" style={{ padding: '8px 16px 4px' }}>COMPANY</div>
-              <div className="ncp-company-list">
-                {fdFilteredCompanies.map((c, i) => (
-                  <button key={i} className="ncp-company-item" onClick={() => onNavigate('folders')}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    <span>{lang === 'en' ? c.en : (c.jp || c.en)}</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}>
-                      <polyline points="9 18 15 12 9 6"/>
-                    </svg>
-                  </button>
-                ))}
-                {fdFilteredCompanies.length === 0 && (
-                  <div style={{ padding: '10px 12px', fontSize: 12, color: '#9098a9', textAlign: 'center' }}>{t.noCompanies || 'No companies found'}</div>
-                )}
-              </div>
-            </div>
-          )}
-
-        </nav>
-
-        {/* Recent Folders */}
-        {!collapsed && (
-          <>
-            <div className="ncp-section-label" style={{ marginTop: '12px' }}>
-              {t.recentFolders}
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}>
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </div>
-            <div className="ncp-folder-search-wrap">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-              </svg>
-              <input
-                className="ncp-folder-search"
-                type="text"
-                placeholder={t.searchFolders}
-                value={folderSearch}
-                onChange={e => setFolderSearch(e.target.value)}
-              />
-            </div>
-            <div className="ncp-folder-list">
-              {recentFolders.map((f, i) => (
-                <button key={i} className="ncp-folder-item" onClick={() => onNavigate('folders')}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                  </svg>
-                  {lang === 'en' ? f.en : f.jp}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* Recent Files */}
-        {!collapsed && (
-          <>
-            <div className="ncp-section-label" style={{ marginTop: '8px' }}>
-              RECENT FILES
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}>
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </div>
-            <div className="np-folder-search-wrap">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input className="np-folder-search" placeholder="Search files..." />
-            </div>
-            <div className="ncp-folder-list">
-              {(fileRows || []).filter(f => f.type === 'Chat').length === 0 && <div style={{ padding: '4px 16px', fontSize: 12, color: '#9098a9' }}>No files yet</div>}
-              {(fileRows || []).filter(f => f.type === 'Chat').slice(0, 8).map((f, i) => (
-                <button key={i} className="ncp-folder-item np-file-item">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                  </svg>
-                  <span className="np-file-item-name">{lang === 'en' ? f.en : (f.jp || f.en)}</span>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* Footer */}
-        <div className="ncp-sidebar-footer">
-          {collapsed ? (
-            <>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-              </svg>
-              <div className="ncp-user-avatar">{displayName[0]?.toUpperCase()}</div>
-            </>
-          ) : (
-            <>
-              <div className="ncp-user-row">
-                <div className="ncp-user-avatar">{displayName[0]?.toUpperCase()}</div>
-                <div className="ncp-user-info">
-                  <div className="ncp-user-name">{displayName}</div>
-                  <div className="ncp-user-email">{displayEmail}</div>
-                </div>
-                <button className="ncp-logout-btn" onClick={onLogout} title="Logout">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-                  </svg>
-                </button>
-              </div>
-              <div className="cp-lang-row" style={{ position: 'relative' }}>
-                {langOpen && (
-                  <div className="cp-lang-dropdown">
-                    <button className={`cp-lang-option${lang === 'en' ? ' cp-lang-option--active' : ''}`}
-                      onClick={() => { if (lang !== 'en') onToggleLang?.(); setLangOpen(false); }}>
-                      <span className="cp-lang-badge">EN</span>{t.english}
-                      {lang === 'en' && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}><polyline points="20 6 9 17 4 12"/></svg>}
-                    </button>
-                    <button className={`cp-lang-option${lang === 'jp' ? ' cp-lang-option--active' : ''}`}
-                      onClick={() => { if (lang !== 'jp') onToggleLang?.(); setLangOpen(false); }}>
-                      <span className="cp-lang-badge">JP</span>{t.japanese}
-                      {lang === 'jp' && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}><polyline points="20 6 9 17 4 12"/></svg>}
-                    </button>
-                  </div>
-                )}
-                <button className="cp-lang-btn" onClick={() => setLangOpen(o => !o)}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                  <span>{lang === 'en' ? t.english : t.japanese}</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', transform: langOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-              </div>
-              <div className="ncp-version">v1.2.0</div>
-            </>
-          )}
-        </div>
-
-      </aside>
+      <Sidebar
+        activePage="newChat"
+        lang={lang}
+        user={user}
+        companies={companies}
+        products={products}
+        folderRows={folderRows}
+        fileRows={fileRows}
+        onNavigate={onNavigate}
+        onLogout={onLogout}
+        onToggleLang={onToggleLang}
+        onOpenFolder={() => onNavigate('folders')}
+        onCreateFolder={onCreateFolder}
+      />
 
       {/* ── Main content ── */}
       <main className="ncp-main">
@@ -532,9 +279,9 @@ export default function NewChatPage({ lang, user, folders, companies, folderRows
                         {visibleCompanies.length === 0 && <div className="ncp-drill-empty">{t.noCompanies}</div>}
                         {visibleCompanies.map((c, i) => (
                           <button key={i} className="ncp-drill-item" onClick={() => { setDrillCompany(c); setDrillLevel(1); setDrillSearch(''); }}>
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                              <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                            </svg>
+                            <span className="ncp-drill-icon">
+                              <CompanyIcon size={13} />
+                            </span>
                             <span>{lang === 'en' ? c.en : (c.jp || c.en)}</span>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', flexShrink: 0 }}><polyline points="9 18 15 12 9 6"/></svg>
                           </button>
@@ -549,9 +296,9 @@ export default function NewChatPage({ lang, user, folders, companies, folderRows
                         {visibleProducts.length === 0 && <div className="ncp-drill-empty">{t.noProducts}</div>}
                         {visibleProducts.map((p, i) => (
                           <button key={i} className="ncp-drill-item" onClick={() => { setDrillProduct(p); setDrillLevel(2); setDrillSearch(''); }}>
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                            </svg>
+                            <span className="ncp-drill-icon">
+                              <ProductIcon size={13} />
+                            </span>
                             <span>{lang === 'en' ? p.en : (p.jp || p.en)}</span>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', flexShrink: 0 }}><polyline points="9 18 15 12 9 6"/></svg>
                           </button>
@@ -566,9 +313,9 @@ export default function NewChatPage({ lang, user, folders, companies, folderRows
                         {visibleFolders.length === 0 && <div className="ncp-drill-empty">{t.noFolders}</div>}
                         {visibleFolders.map((f, i) => (
                           <button key={i} className="ncp-drill-item" onClick={() => selectFolder(f)}>
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                            </svg>
+                            <span className="ncp-drill-icon">
+                              <FolderIcon size={13} />
+                            </span>
                             <span>{lang === 'en' ? f.en : (f.jp || f.en)}</span>
                           </button>
                         ))}
@@ -835,45 +582,6 @@ export default function NewChatPage({ lang, user, folders, companies, folderRows
             </div>
             <div className="np-modal-footer">
               <button className="np-modal-cancel" onClick={() => setShowGenLogModal(false)}>{t.close}</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── New Folder Modal ── */}
-      {showNewFolder && (
-        <div className="np-modal-backdrop" onClick={() => setShowNewFolder(false)}>
-          <div className="np-modal" onClick={e => e.stopPropagation()}>
-            <div className="np-modal-header">
-              <span className="np-modal-title">{t.newFolder}</span>
-              <button className="np-modal-close" onClick={() => setShowNewFolder(false)}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            </div>
-            <div className="np-modal-body">
-              <div className="np-modal-field">
-                <label className="np-modal-label">{t.product}</label>
-                <div className="np-modal-select-wrap">
-                  <select className="np-modal-select" value={newFolderProduct} onChange={e => setNewFolderProduct(e.target.value)}>
-                    <option value="">{t.selectProduct}</option>
-                    {(folders || []).map((f, i) => (
-                      <option key={i} value={f._awid || f.id}>{lang === 'en' ? f.en : (f.jp || f.en)}</option>
-                    ))}
-                  </select>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="np-modal-select-arrow"><polyline points="6 9 12 15 18 9"/></svg>
-                </div>
-              </div>
-              <div className="np-modal-field">
-                <label className="np-modal-label">{t.folderName}</label>
-                <input className="np-modal-input" placeholder="e.g. Spring Campaign 2026" value={newFolderName} onChange={e => setNewFolderName(e.target.value)} autoFocus />
-              </div>
-            </div>
-            <div className="np-modal-footer">
-              <button className="np-modal-cancel" onClick={() => setShowNewFolder(false)}>{t.cancel}</button>
-              <button className="np-modal-create" onClick={() => {
-                if (newFolderName.trim() && onCreateFolder) onCreateFolder({ name: newFolderName.trim(), productId: newFolderProduct });
-                setShowNewFolder(false); setNewFolderName(''); setNewFolderProduct('');
-              }}>{t.createFolder}</button>
             </div>
           </div>
         </div>

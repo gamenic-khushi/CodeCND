@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { auth } from '../../appwrite';
+import './LoginPage.css';
 
 export default function LoginPage({ onLogin }) {
   const [email,    setEmail]    = useState('');

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { getFormFields } from '../../data';
 import translations from '../../translations';
+import './CompaniesPage.css';
+import '../../components/modals.css';
 
 export default function AddCompanyPage({
   lang, user, folderRows, products, prRows,

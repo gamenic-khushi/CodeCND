@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import translations from '../../translations';
 import { fn } from '../../appwrite';
+import './MatrixGenerationPage.css';
 
 const MATRIX_ITEMS = [
   { id: 1, title: 'Banner Copy',      subtitle: 'Write compelling banner copy for the ...', defaultPrompt: 'Write compelling banner copy for the product launch campaign targeting young professionals aged 25–35.' },
@@ -149,7 +150,7 @@ export default function MatrixGenerationPage({ lang, user, folderRows, fileRows 
 
           <button className="cp-nav-item" onClick={() => onNavigate?.('companies')}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4M10 10h4M10 14h4M10 18h4"/>
             </svg>
             {!collapsed && t.companies}
           </button>
@@ -174,8 +175,8 @@ export default function MatrixGenerationPage({ lang, user, folderRows, fileRows 
               <div className="np-pd-section-label">COMPANY</div>
               <div className="np-pd-list">
                 {pdFilteredCompanies.map(c => (
-                  <button key={c.id} className="np-pd-item" onClick={() => onNavigate?.('companies')}>
-                    <div className="np-pd-item-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></div>
+                  <button key={c.id} className="np-pd-item" onClick={() => onNavigate?.('companies', c)}>
+                    <div className="np-pd-item-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4M10 10h4M10 14h4M10 18h4"/></svg></div>
                     <span className="np-pd-item-name">{lang === 'en' ? c.en : (c.jp || c.en)}</span>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', flexShrink: 0 }}><polyline points="9 18 15 12 9 6"/></svg>
                   </button>

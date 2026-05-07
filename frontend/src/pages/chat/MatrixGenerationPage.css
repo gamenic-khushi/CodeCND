@@ -1,0 +1,55 @@
+/* ── Matrix Generation Page (mg-*) ──────────────────────────── */
+.mg-layout { display: flex; height: 100vh; overflow: hidden; background: #fff; }
+.mg-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.mg-header { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-bottom: 1px solid #ebebf0; flex-shrink: 0; }
+.mg-back-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: none; background: transparent; cursor: pointer; color: #3d4252; border-radius: 6px; }
+.mg-back-btn:hover { background: #f3f4f6; }
+.mg-title { font-size: 16px; font-weight: 700; color: #18192a; }
+.mg-tabs-bar { display: flex; gap: 4px; padding: 14px 14px 12px; border-bottom: 1px solid #ebebf0; flex-shrink: 0; background: #fff; }
+.mg-tab { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border: none; background: transparent; border-radius: 8px; font-size: 13px; font-weight: 500; color: #9098a9; cursor: pointer; transition: background 0.15s, color 0.15s; }
+.mg-tab--active { background: #eef0ff; color: #6366f1; }
+.mg-tab:not(.mg-tab--active):hover { background: #f5f6fa; color: #3d4252; }
+.mg-tab-badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 50px; background: #6366f1; color: #fff; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-left: 4px; }
+.mg-tab--active .mg-tab-badge { background: #6366f1; color: #fff; }
+.mg-list-done { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 50px; background: #d1fae5; color: #059669; flex-shrink: 0; }
+.mg-log-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #e8eaf0; border-radius: 10px; background: #fff; cursor: pointer; text-align: left; margin: 4px 10px; width: calc(100% - 20px); transition: box-shadow 0.15s; }
+.mg-log-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+.mg-list-check { width: 24px; height: 24px; border-radius: 50%; background: #f0fdf4; border: 1.5px solid #86efac; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.mg-card-done-badge { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: #16a34a; background: #dcfce7; padding: 3px 9px; border-radius: 50px; margin-right: auto; }
+.mg-card-output--filled { color: #1a1a2e; background: #fff; border: 1px solid #e0e2ea; }
+.mg-body { display: flex; flex: 1; overflow: hidden; }
+.mg-list-panel { width: 300px; min-width: 300px; display: flex; flex-direction: column; border-right: 1px solid #ebebf0; background: #fff; overflow: hidden; }
+.mg-list { flex: 1; overflow-y: auto; padding: 6px 0; }
+.mg-list-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px 18px; border: none; background: none; cursor: pointer; text-align: left; transition: background 0.12s; }
+.mg-list-item:hover { background: #f7f8fc; }
+.mg-list-dot { width: 8px; height: 8px; border-radius: 50%; background: #c8cad4 !important; flex-shrink: 0; }
+.mg-list-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.mg-list-title { font-size: 14px; font-weight: 600; color: #18192a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mg-list-subtitle { font-size: 12px; color: #9098a9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mg-log-item .mg-list-subtitle { white-space: normal; overflow: visible; text-overflow: unset; display: flex; align-items: center; gap: 4px; font-size: 12px; color: #9098a9; margin-top: 3px; }
+.mg-list-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 10px; flex-shrink: 0; }
+.mg-list-header-title { font-size: 13.5px; font-weight: 600; color: #18192a; }
+.mg-select-all-btn { background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 500; color: #6366f1; padding: 0; }
+.mg-select-all-btn:hover { color: #5254cc; }
+.mg-checkbox { width: 18px; height: 18px; border: 1.5px solid #d1d5db; border-radius: 5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: #fff; transition: background 0.15s, border-color 0.15s; }
+.mg-checkbox--checked { background: #6366f1; border-color: #6366f1; }
+.mg-list-footer { padding: 12px 14px; border-top: 1px solid #ebebf0; flex-shrink: 0; }
+.mg-generate-all-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 0; border: none; background: #6366f1; color: #fff; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.mg-generate-all-btn:hover { background: #5254cc; }
+.mg-generate-all-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+.mg-cards-panel { flex: 1; overflow-y: auto; padding: 20px 40px; background: #f7f8fc; display: flex; flex-direction: column; gap: 16px; align-items: center; }
+.mg-cards-panel .mg-card { width: 100%; max-width: 760px; }
+.mg-card { background: #fff; border-radius: 12px; border: 1px solid #ebebf0; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.mg-card-header { display: flex; align-items: center; gap: 10px; }
+.mg-card-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: #c0c4d0; }
+.mg-card-title { font-size: 14px; font-weight: 700; color: #18192a; flex: 1; }
+.mg-card-generate-btn { display: flex; align-items: center; gap: 6px; padding: 7px 16px; border: none; background: #6366f1; color: #fff; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
+.mg-card-generate-btn:hover { background: #5254cc; }
+.mg-card-generate-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+.mg-card-section-label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; color: #9098a9; text-transform: uppercase; }
+.mg-card-prompt { width: 100%; min-height: 72px; padding: 10px 12px; border: 1px solid #e0e2ea; border-radius: 8px; font-size: 13px; color: #3d4252; resize: vertical; font-family: inherit; outline: none; box-sizing: border-box; line-height: 1.5; }
+.mg-card-prompt:focus { border-color: #6366f1; }
+.mg-card-output { min-height: 52px; padding: 10px 12px; background: #f7f8fc; border-radius: 8px; font-size: 13px; color: #9098a9; line-height: 1.6; }
+.mg-card-output--filled { color: #1a1a2e; }
+.mg-logs-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #9098a9; font-size: 13.5px; }
+.mg-logs-empty-panel { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 16px; text-align: center; font-size: 13px; color: #9098a9; line-height: 1.6; }

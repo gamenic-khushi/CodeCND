@@ -9,7 +9,9 @@ import NotificationPage  from './pages/notifications/NotificationPage';
 import NewChatPage       from './pages/chat/NewChatPage';
 import CompaniesPage     from './pages/companies/CompaniesPage';
 import AddCompanyPage    from './pages/companies/AddCompanyPage';
+import AddProductPage    from './pages/companies/AddProductPage';
 import FolderDetailPage        from './pages/folders/FolderDetailPage';
+import FoldersPage             from './pages/folders/FoldersPage';
 import MatrixGenerationPage    from './pages/chat/MatrixGenerationPage';
 import AddFilePage             from './pages/files/AddFilePage';
 
@@ -37,22 +39,19 @@ export default function App() {
   const [addFileInitFolder,    setAddFileInitFolder]    = useState(null);
   const [matrixData,           setMatrixData]           = useState({});
   const [matrixGenFolder,      setMatrixGenFolder]      = useState(null);
+  const [companiesInitCompany, setCompaniesInitCompany] = useState(null);
+  const [showFolders,          setShowFolders]          = useState(false);
+  const [foldersInitCompany,   setFoldersInitCompany]   = useState(null);
+  const [foldersInitProduct,   setFoldersInitProduct]   = useState(null);
+  const [showAddProduct,       setShowAddProduct]       = useState(false);
+  const [addProductInitCompany, setAddProductInitCompany] = useState(null);
   const [formData, setFormData]                 = useState(EMPTY_FORM);
-  const [companies, setCompanies]               = useState([
-    { id: 'co0001', en: 'Company A',               jp: 'カンパニーA' },
-    { id: 'co0002', en: 'Beer',                    jp: 'ビール' },
-    { id: 'co0003', en: 'Kanro',                   jp: 'カンロ' },
-    { id: 'co0005', en: 'Apple Inc.',              jp: 'アップル株式会社' },
-    { id: 'co0006', en: 'Shiseido',                jp: '資生堂' },
-    { id: 'co0007', en: 'test',                    jp: 'テスト' },
-    { id: 'co0011', en: "McDonald's",              jp: 'マクドナルド' },
-    { id: 'co0012', en: 'Nissan Motor Corporation', jp: '日産自動車株式会社' },
-  ]);
+  const [companies, setCompanies]               = useState([]);
   const [, setToast]                 = useState(null);
-  const [products, setProducts]     = useState(INITIAL_PRODUCTS);
-  const [folderRows, setFolderRows] = useState(INITIAL_FOLDERS);
-  const [fileRows, setFileRows]     = useState(INITIAL_FILE_ROWS);
-  const [prRows, setPrRows]         = useState(INITIAL_PR_ROWS);
+  const [products, setProducts]     = useState([]);
+  const [folderRows, setFolderRows] = useState([]);
+  const [fileRows, setFileRows]     = useState([]);
+  const [prRows, setPrRows]         = useState([]);
 
   const t = translations[lang];
 
@@ -115,38 +114,40 @@ export default function App() {
   // Load all collections from Appwrite once the user is authenticated
   useEffect(() => {
     if (!user) return;
-    db.list('files').then(docs => { if (docs.length) setFileRows(docs); }).catch(() => {});
-    db.list('pressReleases').then(docs => { if (docs.length) setPrRows(docs); }).catch(() => {});
+    db.list('files').then(docs => setFileRows(docs)).catch(() => {});
+    db.list('pressReleases').then(docs => setPrRows(docs)).catch(() => {});
 
     Promise.all([
       db.list('companies').catch(() => []),
       db.list('products').catch(() => []),
       db.list('folders').catch(() => []),
     ]).then(([companyDocs, productDocs, folderDocs]) => {
-      if (companyDocs.length) setCompanies(companyDocs);
+      setCompanies(companyDocs);
 
       const enrichedProducts = productDocs.map(product => {
         const company = companyDocs.find(c => c._awid === product.companyId || c.id === product.companyId);
-        return { ...product, companyEn: company ? company.en : '', companyJp: company ? company.jp : '' };
+        return {
+          ...product,
+          companyEn: company ? company.en : (product.companyEn || ''),
+          companyJp: company ? company.jp : (product.companyJp || ''),
+        };
       });
-      if (enrichedProducts.length) setProducts(enrichedProducts);
+      setProducts(enrichedProducts);
 
-      if (folderDocs.length) {
-        const enriched = folderDocs.map(folder => {
-          const product = enrichedProducts.find(p => p._awid === folder.productId);
-          if (product) {
-            return {
-              ...folder,
-              companyEn: product.companyEn || '',
-              companyJp: product.companyJp || '',
-              productEn: product.en        || '',
-              productJp: product.jp        || '',
-            };
-          }
-          return folder;
-        });
-        setFolderRows(enriched);
-      }
+      const enrichedFolders = folderDocs.map(folder => {
+        const product = enrichedProducts.find(p => p._awid === folder.productId);
+        if (product) {
+          return {
+            ...folder,
+            companyEn: product.companyEn || '',
+            companyJp: product.companyJp || '',
+            productEn: product.en        || '',
+            productJp: product.jp        || '',
+          };
+        }
+        return folder;
+      });
+      setFolderRows(enrichedFolders);
     });
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -185,14 +186,22 @@ export default function App() {
 
   if (!user) return <LoginPage onLogin={u => { setUser(u); setShowNotification(true); }} />;
 
-  function handleSidebarNavigate(section, fromSetter) {
+  function handleSidebarNavigate(section, fromSetter, data) {
     fromSetter(false);
     setShowFolderDetail(false);
     setShowMatrixGen(false);
     setShowAddFile(false);
+    setShowFolders(false);
     if (section === 'notification') { setShowNotification(true); }
     else if (section === 'newChat')  { setShowNewChat(true); }
-    else if (section === 'companies') { setShowCompanies(true); }
+    else if (section === 'companies') {
+      setCompaniesInitCompany(data || null);
+      setShowCompanies(true);
+    } else if (section === 'folders') {
+      setFoldersInitCompany(data?.company || null);
+      setFoldersInitProduct(data?.product || null);
+      setShowFolders(true);
+    }
   }
 
   if (showAddFile) return (
@@ -201,11 +210,12 @@ export default function App() {
       user={user}
       folderRows={folderRows}
       companies={companies}
+      products={products}
       fileRows={fileRows}
       initialFolder={addFileInitFolder}
       onLogout={handleLogout}
       onToggleLang={toggleLang}
-      onNavigate={(section) => handleSidebarNavigate(section, setShowAddFile)}
+      onNavigate={(section, data) => handleSidebarNavigate(section, setShowAddFile, data)}
       onBack={() => {
         setShowAddFile(false);
         if (addFileInitFolder) {
@@ -264,7 +274,7 @@ export default function App() {
       products={products}
       onLogout={handleLogout}
       onToggleLang={toggleLang}
-      onNavigate={(section) => handleSidebarNavigate(section, setShowFolderDetail)}
+      onNavigate={(section, data) => handleSidebarNavigate(section, setShowFolderDetail, data)}
       onBack={() => { setShowFolderDetail(false); setShowCompanies(true); }}
       matrixData={matrixData[selectedFolderDetail?._awid || selectedFolderDetail?.id] || {}}
       onNewChat={() => { setNewChatInitFolder(selectedFolderDetail); setShowFolderDetail(false); setShowNewChat(true); }}
@@ -290,11 +300,68 @@ export default function App() {
       prRows={prRows}
       onLogout={handleLogout}
       onToggleLang={toggleLang}
-      onNavigate={(section) => handleSidebarNavigate(section, setShowAddCompany)}
+      onNavigate={(section, data) => handleSidebarNavigate(section, setShowAddCompany, data)}
       onBack={() => { setShowAddCompany(false); setShowCompanies(true); }}
       onSave={(data) => {
         handleSaveCompany(data);
         setShowAddCompany(false);
+        setShowCompanies(true);
+      }}
+    />
+  );
+
+  if (showAddProduct) return (
+    <AddProductPage
+      lang={lang}
+      user={user}
+      companies={companies}
+      products={products}
+      folderRows={folderRows}
+      fileRows={fileRows}
+      initialCompany={addProductInitCompany}
+      onLogout={handleLogout}
+      onToggleLang={toggleLang}
+      onNavigate={(section, data) => handleSidebarNavigate(section, setShowAddProduct, data)}
+      onBack={() => { setShowAddProduct(false); setCompaniesInitCompany(addProductInitCompany); setShowCompanies(true); }}
+      onSave={(data) => {
+        const nums = products.map(p => parseInt((p.id || '').replace('pr', '')) || 0);
+        const newId = `pr${String(Math.max(0, ...nums) + 1).padStart(4, '0')}`;
+        const company = data.companyRef || companies.find(c => c.en === data.company || c.jp === data.company);
+        const newProduct = {
+          id: newId,
+          en: data.product,
+          jp: data.product,
+          companyId: company?._awid || company?.id || '',
+          companyEn: company?.en || data.company || '',
+          companyJp: company?.jp || data.company || '',
+          websiteUrl: data.websiteUrl,
+          industry: data.industry,
+          employees: data.employees,
+          revenueScale: data.revenueScale,
+          brandConcept: data.brandConcept,
+          releaseDate: data.releaseDate,
+          price: data.price,
+          targetCustomers: data.targetCustomers,
+          differentiationPoints: data.differentiationPoints,
+          productSpecifications: data.productSpecifications,
+          brandStrategy: data.brandStrategy,
+          usageScenes: data.usageScenes,
+          customerInsight: data.customerInsight,
+          priceJustification: data.priceJustification,
+          salesScale: data.salesScale,
+          costStructure: data.costStructure,
+          pastPromotion: data.pastPromotion,
+          salesChannels: data.salesChannels,
+          swotAnalysis: data.swotAnalysis,
+          futureOutlook: data.futureOutlook,
+          notes: data.notes,
+        };
+        setProducts(prev => [newProduct, ...prev]);
+        db.create('products', newProduct)
+          .then(saved => setProducts(prev => prev.map(p => p.id === newId ? { ...p, _awid: saved._awid } : p)))
+          .catch(dbErr);
+        setShowAddProduct(false);
+        setCompaniesInitCompany(addProductInitCompany);
         setShowCompanies(true);
       }}
     />
@@ -325,7 +392,7 @@ export default function App() {
         setShowMatrixGen(false);
         setShowNewChat(true);
       }}
-      onNavigate={(section) => handleSidebarNavigate(section, setShowMatrixGen)}
+      onNavigate={(section, data) => handleSidebarNavigate(section, setShowMatrixGen, data)}
       onSaveMatrix={(outputs, prompts) => {
         const folderId = matrixGenFolder?._awid || matrixGenFolder?.id;
         if (!folderId) return;
@@ -345,6 +412,7 @@ export default function App() {
       user={user}
       folders={folderRows}
       companies={companies}
+      products={products}
       folderRows={folderRows}
       fileRows={fileRows}
       initialFolder={newChatInitFolder}
@@ -365,7 +433,7 @@ export default function App() {
           setShowNotification(true);
         }
       }}
-      onNavigate={(section) => handleSidebarNavigate(section, setShowNewChat)}
+      onNavigate={(section, data) => handleSidebarNavigate(section, setShowNewChat, data)}
       onSave={(data) => {
         const nums = fileRows.map(f => parseInt((f.refId || '').replace('fa', '')) || 0);
         const nextNum = Math.max(0, ...nums) + 1;
@@ -402,6 +470,43 @@ export default function App() {
     />
   );
 
+  if (showFolders) return (
+    <FoldersPage
+      lang={lang}
+      user={user}
+      companies={companies}
+      products={products}
+      folderRows={folderRows}
+      fileRows={fileRows}
+      initialCompany={foldersInitCompany}
+      initialProduct={foldersInitProduct}
+      onLogout={handleLogout}
+      onToggleLang={toggleLang}
+      onNavigate={(section, data) => handleSidebarNavigate(section, setShowFolders, data)}
+      onOpenFolder={(f) => { setSelectedFolderDetail(f); setShowFolders(false); setShowFolderDetail(true); }}
+      onCreateFolder={({ name, productId }) => {
+        const nums = folderRows.map(f => parseInt((f.id || '').replace('fo', '')) || 0);
+        const newId = `fo${String(Math.max(0, ...nums) + 1).padStart(4, '0')}`;
+        const product = products.find(p => (p._awid || p.id) === productId);
+        const newFolder = { id: newId, en: name, jp: name, productId: productId || '', companyEn: product?.companyEn || '', companyJp: product?.companyJp || '', productEn: product?.en || '', productJp: product?.jp || '' };
+        setFolderRows(prev => [newFolder, ...prev]);
+        setShowFolders(false); setSelectedFolderDetail(newFolder); setShowFolderDetail(true);
+        db.create('folders', newFolder).then(saved => { const w = { ...newFolder, _awid: saved._awid }; setFolderRows(prev => prev.map(f => f.id === newId ? w : f)); setSelectedFolderDetail(w); }).catch(dbErr);
+      }}
+      onDeleteFolder={(id) => { const t = folderRows.find(f => f.id === id); setFolderRows(prev => prev.filter(f => f.id !== id)); if (t?._awid) db.delete('folders', t._awid).catch(dbErr); }}
+      onEditFolder={(updated) => { setFolderRows(prev => prev.map(f => f.id === updated.id ? updated : f)); if (updated._awid) { const { _awid, ...d } = updated; db.update('folders', _awid, d).catch(dbErr); } }}
+      onDuplicateFolder={(f) => {
+        const nums = folderRows.map(x => parseInt((x.id || '').replace('fo', '')) || 0);
+        const newId = `fo${String(Math.max(0, ...nums) + 1).padStart(4, '0')}`;
+        const { _awid: _, ...rest } = f;
+        const dupe = { ...rest, id: newId, en: f.en + ' Copy', jp: (f.jp || f.en) + ' のコピー' };
+        setFolderRows(prev => [dupe, ...prev]);
+        db.create('folders', dupe).then(saved => setFolderRows(prev => prev.map(x => x.id === newId ? { ...x, _awid: saved._awid } : x))).catch(dbErr);
+      }}
+      onAddFile={() => { setAddFileInitFolder(null); setShowFolders(false); setShowAddFile(true); }}
+    />
+  );
+
   if (showCompanies) return (
     <CompaniesPage
       lang={lang}
@@ -411,8 +516,10 @@ export default function App() {
       products={products}
       onLogout={handleLogout}
       onToggleLang={toggleLang}
-      onNavigate={(section) => handleSidebarNavigate(section, setShowCompanies)}
+      initialCompany={companiesInitCompany}
+      onNavigate={(section, data) => handleSidebarNavigate(section, setShowCompanies, data)}
       onAddCompany={() => { setShowCompanies(false); setShowAddCompany(true); }}
+      onAddProduct={(company) => { setAddProductInitCompany(company || null); setShowCompanies(false); setShowAddProduct(true); }}
       onViewCompany={() => {}}
       onCreateFolder={({ name, productId }) => {
         const nums = folderRows.map(f => parseInt((f.id || '').replace('fo', '')) || 0);
@@ -458,6 +565,25 @@ export default function App() {
           .then(saved => setCompanies(prev => prev.map(x => x.id === newId ? { ...x, _awid: saved._awid } : x)))
           .catch(dbErr);
       }}
+      onEditProduct={(updated) => {
+        setProducts(prev => prev.map(p => p.id === updated.id ? updated : p));
+        if (updated._awid) { const { _awid, ...d } = updated; db.update('products', _awid, d).catch(dbErr); }
+      }}
+      onDeleteProduct={(id) => {
+        const toDelete = products.find(p => p.id === id);
+        setProducts(prev => prev.filter(p => p.id !== id));
+        if (toDelete?._awid) db.delete('products', toDelete._awid).catch(dbErr);
+      }}
+      onDuplicateProduct={(p) => {
+        const nums = products.map(x => parseInt((x.id || '').replace('pr', '')) || 0);
+        const newId = `pr${String(Math.max(0, ...nums) + 1).padStart(4, '0')}`;
+        const { _awid: _, ...rest } = p;
+        const dupe = { ...rest, id: newId, en: p.en + ' Copy', jp: (p.jp || p.en) + ' のコピー' };
+        setProducts(prev => [dupe, ...prev]);
+        db.create('products', dupe)
+          .then(saved => setProducts(prev => prev.map(x => x.id === newId ? { ...x, _awid: saved._awid } : x)))
+          .catch(dbErr);
+      }}
     />
   );
 
@@ -494,7 +620,7 @@ export default function App() {
           .catch(dbErr);
       }}
       onNewFolder={() => { setShowNotification(false); setShowCompanies(false); setShowNotification(true); }}
-      onNavigate={(section) => handleSidebarNavigate(section, setShowNotification)}
+      onNavigate={(section, data) => handleSidebarNavigate(section, setShowNotification, data)}
       onOpenFolder={(f) => {
         setSelectedFolderDetail(f);
         setShowNotification(false);

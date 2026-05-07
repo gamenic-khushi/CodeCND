@@ -1,0 +1,145 @@
+/* ── Companies Page (cp-*) ── */
+@import '../../components/Sidebar.css';
+
+.cp-layout { display: flex; height: 100vh; background: #fff; font-family: inherit; overflow: hidden; }
+/* Main */
+.cp-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #fff; }
+.cp-main-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 28px 14px; border-bottom: 1px solid #ebebf0; flex-shrink: 0; }
+.cp-header-left { display: flex; align-items: center; gap: 12px; }
+.cp-main-title { font-size: 20px; font-weight: 700; color: #18192a; margin: 0; }
+.cp-add-btn { width: 34px; height: 34px; border-radius: 8px; background: #6366f1; color: #fff; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+.cp-add-btn:hover { background: #5254cc; }
+.cp-filter-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: #fff; border: 1.5px solid #d1d5db; border-radius: 20px; font-size: 13px; font-weight: 500; color: #374151; }
+.cp-filter-chip svg { color: #6b7280; flex-shrink: 0; }
+.cp-filter-chip-x { background: none; border: none; cursor: pointer; color: #9098a9; font-size: 15px; line-height: 1; padding: 0 0 0 4px; }
+.cp-search-wrap { display: flex; align-items: center; gap: 8px; border: 1px solid #e4e6ef; border-radius: 8px; padding: 7px 14px; background: #fff; width: 240px; }
+.cp-search-input { border: none; outline: none; font-size: 13px; color: #3d4252; background: transparent; width: 100%; }
+.cp-search-input::placeholder { color: #c0c4d0; }
+/* Table */
+.cp-table-wrap { flex: 1; overflow-y: auto; display: flex; flex-direction: column; padding: 16px 24px; gap: 0; }
+.cp-table-card { border: 1px solid #e8eaf0; border-radius: 12px; overflow: hidden; background: #fff; display: flex; flex-direction: column; flex: 1; }
+.cp-thead { display: flex; align-items: center; padding: 12px 20px; border-bottom: 1px solid #ebebf0; background: #fafbfc; position: sticky; top: 0; z-index: 1; }
+.cp-th { font-size: 12px; font-weight: 600; color: #9098a9; display: flex; align-items: center; gap: 4px; }
+.cp-sort-arrows { font-size: 10px; color: #c0c4d0; }
+.cp-th-check { width: 44px; flex-shrink: 0; }
+.cp-th-refid { width: 200px; flex-shrink: 0; }
+.cp-th-name { flex: 1; }
+.cp-th-actions { width: 180px; flex-shrink: 0; }
+.cp-tbody { flex: 1; }
+.cp-row { display: flex; align-items: center; padding: 16px 20px; border-bottom: 1px solid #f0f1f6; transition: background 0.1s; min-height: 58px; }
+.cp-row:last-child { border-bottom: none; }
+.cp-row:hover { background: #fafbff; }
+.cp-row--checked { background: #f5f6ff; }
+.cp-cell { display: flex; align-items: center; }
+.cp-cell-check { width: 44px; flex-shrink: 0; }
+.cp-cell-refid { width: 200px; flex-shrink: 0; gap: 8px; }
+.cp-cell-name { flex: 1; }
+.cp-cell-actions { width: 180px; flex-shrink: 0; gap: 2px; justify-content: flex-end; }
+.cp-refid-text { font-size: 13px; color: #9098a9; }
+.cp-company-name { font-size: 13.5px; font-weight: 500; color: #6366f1; cursor: pointer; }
+.cp-company-name:hover { text-decoration: underline; }
+.cp-checkbox { width: 15px; height: 15px; cursor: pointer; accent-color: #6366f1; }
+.cp-icon-btn { border: none; background: transparent; cursor: pointer; padding: 5px; border-radius: 5px; color: #9098a9; display: flex; align-items: center; justify-content: center; }
+.cp-icon-btn:hover { background: #f3f4f8; }
+.cp-icon-btn--view:hover { color: #6366f1; }
+.cp-icon-btn--edit { color: #22c55e; }
+.cp-icon-btn--edit:hover { color: #16a34a; }
+.cp-icon-btn--delete { color: #ef4444; }
+.cp-icon-btn--delete:hover { color: #dc2626; }
+/* Pagination */
+.cp-pagination { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-top: 1px solid #ebebf0; flex-shrink: 0; background: #fff; }
+.cp-pagination-info { font-size: 12.5px; color: #9098a9; }
+.cp-selection-bar { display: flex; align-items: center; padding: 12px 20px; background: #eef0ff; border-radius: 10px; margin-bottom: 2px; }
+.cp-selection-count { font-size: 13px; font-weight: 600; color: #374151; }
+.cp-selection-actions { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+.cp-clear-sel-btn { background: none; border: none; font-size: 13px; color: #374151; cursor: pointer; font-weight: 500; padding: 0; }
+.cp-clear-sel-btn:hover { color: #6366f1; }
+.cp-delete-sel-btn { display: flex; align-items: center; gap: 7px; padding: 8px 18px; background: #dc2626; border: none; border-radius: 8px; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+.cp-delete-sel-btn:hover { background: #b91c1c; }
+.cp-product-name { font-weight: 600; color: #6366f1; }
+.cp-pagination-btns { display: flex; gap: 4px; align-items: center; }
+.cp-page-btn { min-width: 32px; height: 32px; border: 1px solid #e4e6ef; border-radius: 7px; background: #fff; font-size: 13px; color: #3d4252; cursor: pointer; padding: 0 8px; display: flex; align-items: center; justify-content: center; font-weight: 500; }
+.cp-page-btn:hover { border-color: #6366f1; color: #6366f1; }
+.cp-page-btn--active { background: #6366f1; color: #fff; border-color: #6366f1; }
+
+/* Link copied toast */
+.cp-link-toast { position: fixed; bottom: 28px; right: 28px; display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid #e8eaf0; border-radius: 10px; padding: 12px 18px; font-size: 13.5px; font-weight: 500; color: #1a1a2e; box-shadow: 0 4px 20px rgba(0,0,0,0.12); z-index: 2000; animation: cpToastIn 0.22s ease; }
+.cp-link-toast-icon { width: 22px; height: 22px; border-radius: 50%; background: #6366f1; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+@keyframes cpToastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Add Company Page (acp-*) — used in AddCompanyPage and AddProductPage */
+.acp-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #fff; }
+.acp-header { display: flex; align-items: center; padding: 16px 32px 14px; background: #fff; border-bottom: 1px solid #ebebf0; flex-shrink: 0; position: relative; }
+.acp-breadcrumb { display: flex; align-items: center; gap: 8px; }
+.acp-breadcrumb-page { font-size: 17px; font-weight: 700; color: #18192a; }
+.acp-breadcrumb-icon-btn { background: none; border: none; padding: 4px; cursor: pointer; display: flex; align-items: center; border-radius: 6px; line-height: 0; }
+.acp-breadcrumb-icon-btn:hover svg { stroke: #6366f1; }
+.acp-tabs { display: flex; gap: 0; position: absolute; left: 50%; transform: translateX(-50%); background: #eef0f7; border-radius: 10px; padding: 3px; }
+.acp-tabs-slider { position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px); background: #6366f1; border-radius: 8px; transition: transform 0.25s ease; pointer-events: none; }
+.acp-tab { position: relative; z-index: 1; padding: 7px 22px; border: none; background: none; font-size: 13.5px; font-weight: 500; color: #9098a9; cursor: pointer; border-radius: 8px; white-space: nowrap; transition: color 0.2s; }
+.acp-tab:hover { background: none; }
+.acp-tab--active { background: transparent; color: #fff; }
+.acp-scroll { flex: 1; overflow-y: auto; padding: 28px 32px 24px; }
+.acp-content { display: flex; flex-direction: column; gap: 20px; max-width: 100%; }
+.acp-card { background: #fff; border: 1px solid #e8eaf0; border-radius: 12px; padding: 24px 32px; }
+.acp-card-title { font-size: 14px; font-weight: 600; color: #18192a; margin-bottom: 4px; }
+.acp-card-title--blue { color: #6366f1; font-size: 16px; font-weight: 700; }
+.acp-card-subtitle { font-size: 13px; color: #9098a9; margin-bottom: 22px; }
+.acp-url-row { display: flex; gap: 12px; margin-top: 10px; }
+.acp-url-input { flex: 1; height: 46px; border: 1px solid #e8eaf0; border-radius: 8px; padding: 0 16px; font-size: 14px; color: #18192a; background: #fff; outline: none; font-family: inherit; }
+.acp-url-input:focus { border-color: #6366f1; }
+.acp-url-input::placeholder { color: #c0c4d0; }
+.acp-analyze-btn { height: 46px; padding: 0 28px; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; flex-shrink: 0; white-space: nowrap; }
+.acp-analyze-btn:hover { background: #5254cc; }
+.acp-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 32px; }
+.acp-field { display: flex; flex-direction: column; gap: 7px; }
+.acp-field--full { grid-column: 1 / -1; }
+.acp-label { font-size: 13px; font-weight: 500; color: #3d4252; }
+.acp-required { color: #ef4444; margin-left: 2px; }
+.acp-input { height: 44px; border: 1px solid #e8eaf0; border-radius: 8px; padding: 0 14px; font-size: 14px; color: #18192a; background: #f7f8fa; outline: none; font-family: inherit; }
+.acp-input:focus { border-color: #6366f1; background: #fff; }
+.acp-textarea { border: 1px solid #e8eaf0; border-radius: 8px; padding: 12px 14px; font-size: 14px; color: #18192a; background: #f7f8fa; outline: none; font-family: inherit; resize: vertical; min-height: 100px; }
+.acp-textarea--short { min-height: 64px; }
+.acp-textarea:focus { border-color: #6366f1; background: #fff; }
+.acp-actions { display: flex; justify-content: flex-end; gap: 10px; }
+/* Press Release tab */
+.acp-pr-card { background: #fff; border: 1px solid #e8eaf0; border-radius: 12px; overflow: hidden; }
+.acp-pr-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid #e8eaf0; }
+.acp-pr-add-btn { width: 36px; height: 36px; border-radius: 8px; background: #6366f1; border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+.acp-pr-add-btn:hover { background: #5254cc; }
+.acp-pr-search-wrap { display: flex; align-items: center; gap: 8px; background: #f7f8fc; border: 1px solid #e8eaf0; border-radius: 8px; padding: 0 12px; height: 36px; width: 240px; }
+.acp-pr-search { border: none; outline: none; font-size: 13px; color: #18192a; background: transparent; width: 100%; }
+.acp-pr-table-wrap { overflow: hidden; }
+.acp-pr-table { width: 100%; border-collapse: collapse; }
+.acp-pr-th { padding: 11px 16px; font-size: 12px; font-weight: 600; color: #9098a9; text-align: left; background: #f8f9fc; border-bottom: 1px solid #e8eaf0; }
+.acp-pr-th--actions { width: 100px; }
+.acp-pr-tr:hover { background: #f8f9fc; }
+.acp-pr-tr + .acp-pr-tr { border-top: 1px solid #f0f1f5; }
+.acp-pr-td { padding: 12px 16px; font-size: 13px; color: #18192a; }
+.acp-pr-td--ref { color: #9098a9; font-size: 12px; white-space: nowrap; }
+.acp-pr-td--title { max-width: 520px; }
+.acp-pr-td--actions { white-space: nowrap; }
+.acp-pr-action { background: none; border: none; cursor: pointer; padding: 4px 5px; border-radius: 5px; line-height: 0; }
+.acp-pr-action:hover { background: #f0f1f5; }
+/* Add Press Release form */
+.acp-pr-detail-grid { display: grid; grid-template-columns: 1fr 260px; gap: 16px; margin-top: 16px; }
+.acp-field--pr-title { grid-column: 1; }
+.acp-field--pr-date  { grid-column: 2; }
+.acp-field--pr-title ~ .acp-field--full,
+.acp-field--pr-date  ~ .acp-field--full { grid-column: 1 / -1; }
+.acp-textarea--body { min-height: 260px; resize: vertical; }
+.acp-pr-form-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid #e8eaf0; border-radius: 10px; overflow: hidden; margin-top: 4px; }
+.acp-pr-back-btn { height: 52px; background: #fff; border: none; border-right: 1px solid #e8eaf0; font-size: 15px; font-weight: 500; color: #18192a; cursor: pointer; }
+.acp-pr-back-btn:hover { background: #f5f6fa; }
+.acp-pr-register-btn { height: 52px; background: #6366f1; border: none; font-size: 15px; font-weight: 600; color: #fff; cursor: pointer; }
+.acp-pr-register-btn:hover { background: #5254cc; }
+/* Add Product page sticky footer */
+.app-sticky-footer { display: flex; gap: 10px; margin-top: 16px; }
+.app-sticky-footer-back { flex: 1; height: 42px; background: #fff; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 14px; font-weight: 500; color: #18192a; cursor: pointer; }
+.app-sticky-footer-back:hover { background: #f5f6fa; }
+.app-sticky-footer-register { flex: 1.4; height: 42px; background: #6366f1; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; color: #fff; cursor: pointer; }
+.app-sticky-footer-register:hover { background: #5254cc; }
+.acp-cancel-btn { height: 40px; padding: 0 20px; background: #fff; border: 1px solid #e8eaf0; border-radius: 8px; font-size: 14px; font-weight: 500; color: #6b7280; cursor: pointer; }
+.acp-cancel-btn:hover { background: #f5f6fa; }
+.acp-save-btn { height: 40px; padding: 0 24px; background: #6366f1; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; color: #fff; cursor: pointer; }
+.acp-save-btn:hover { background: #5254cc; }

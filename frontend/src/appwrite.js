@@ -87,7 +87,8 @@ function productFromAppwrite(doc) {
     en:        doc.productName || '',
     jp:        doc.productName || '',
     companyId: doc.companyId   || '',
-    // companyEn/companyJp resolved in App.js via companyId join
+    companyEn: doc.companyName || '',
+    companyJp: doc.companyName || '',
   };
 }
 
