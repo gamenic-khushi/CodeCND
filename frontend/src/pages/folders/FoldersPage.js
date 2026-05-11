@@ -199,14 +199,32 @@ export default function FoldersPage({
           <div className="vd-modal" onClick={e => e.stopPropagation()}>
             <div className="vd-modal-header">
               <span className="vd-modal-title">View Details</span>
-              <button className="vd-modal-close" onClick={() => setViewModal(null)}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+              <button className="vd-modal-close" onClick={() => setViewModal(null)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
             </div>
             <div className="vd-modal-body">
-              <div className="vd-field"><label className="vd-label">Company</label><div className={`vd-value${!viewModal.companyEn ? ' vd-value--empty' : ''}`}>{viewModal.companyEn || '-'}</div></div>
-              <div className="vd-field"><label className="vd-label">Product</label><div className={`vd-value${!viewModal.productEn ? ' vd-value--empty' : ''}`}>{viewModal.productEn || '-'}</div></div>
-              <div className="vd-field"><label className="vd-label">Folder Name</label><div className={`vd-value${!viewModal.en ? ' vd-value--empty' : ''}`}>{(lang === 'en' ? viewModal.en : (viewModal.jp || viewModal.en)) || '-'}</div></div>
+              <div className="vd-field">
+                <label className="vd-label">Folder</label>
+                <div className="vd-value">{(lang === 'en' ? viewModal.en : (viewModal.jp || viewModal.en)) || '-'}</div>
+              </div>
+              <div className="vd-field">
+                <label className="vd-label">File Name</label>
+                <div className="vd-value">{viewModal.fileName || '-'}</div>
+              </div>
+              <div className="vd-field">
+                <label className="vd-label">Preview</label>
+                <div className="vd-preview">
+                  {viewModal.thumbnailUrl
+                    ? <img src={viewModal.thumbnailUrl} alt="preview" style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: 6, objectFit: 'contain' }} />
+                    : <span className="vd-preview-empty">No preview available</span>
+                  }
+                </div>
+              </div>
             </div>
-            <div className="vd-modal-footer"><button className="vd-close-btn" onClick={() => setViewModal(null)}>Close</button></div>
+            <div className="vd-modal-footer">
+              <button className="vd-close-btn" onClick={() => setViewModal(null)}>Close</button>
+            </div>
           </div>
         </div>
       )}
@@ -216,11 +234,27 @@ export default function FoldersPage({
           <div className="ed-modal" onClick={e => e.stopPropagation()}>
             <div className="ed-modal-header">
               <span className="ed-modal-title">Edit Details</span>
-              <button className="ed-modal-close" onClick={() => setEditModal(null)}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+              <button className="ed-modal-close" onClick={() => setEditModal(null)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
             </div>
             <div className="ed-modal-body">
-              <div className="ed-field"><label className="ed-label">Folder Name (EN)</label><input className="ed-input" value={editForm.en || ''} onChange={e => setEditForm(p => ({ ...p, en: e.target.value }))} /></div>
-              <div className="ed-field"><label className="ed-label">Folder Name (JP)</label><input className="ed-input" value={editForm.jp || ''} onChange={e => setEditForm(p => ({ ...p, jp: e.target.value }))} /></div>
+              <div className="ed-field">
+                <label className="ed-label">Ref ID</label>
+                <input className="ed-input" value={editForm.id || ''} onChange={e => setEditForm(p => ({ ...p, id: e.target.value }))} />
+              </div>
+              <div className="ed-field">
+                <label className="ed-label">Folder</label>
+                <input className="ed-input" value={editForm.en || ''} onChange={e => setEditForm(p => ({ ...p, en: e.target.value, jp: e.target.value }))} />
+              </div>
+              <div className="ed-field">
+                <label className="ed-label">Company</label>
+                <input className="ed-input" value={editForm.companyEn || ''} onChange={e => setEditForm(p => ({ ...p, companyEn: e.target.value }))} />
+              </div>
+              <div className="ed-field">
+                <label className="ed-label">Product</label>
+                <input className="ed-input" value={editForm.productEn || ''} onChange={e => setEditForm(p => ({ ...p, productEn: e.target.value }))} />
+              </div>
               <div className="ed-modal-footer">
                 <button className="ed-cancel" onClick={() => setEditModal(null)}>Cancel</button>
                 <button className="ed-save" onClick={() => { onEditFolder?.({ ...editModal, ...editForm }); setEditModal(null); }}>Save</button>

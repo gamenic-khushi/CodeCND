@@ -295,17 +295,54 @@ export default function App() {
     <AddCompanyPage
       lang={lang}
       user={user}
+      companies={companies}
       folderRows={folderRows}
+      fileRows={fileRows}
       products={products}
       prRows={prRows}
       onLogout={handleLogout}
       onToggleLang={toggleLang}
       onNavigate={(section, data) => handleSidebarNavigate(section, setShowAddCompany, data)}
+      onCreateFolder={({ name, productId }) => {
+        const product = products.find(p => (p._awid || p.id) === productId);
+        const newId = `local-${Date.now()}`;
+        const newFolder = { id: newId, en: name, jp: name, productId: productId || '', companyEn: product?.companyEn || '', companyJp: product?.companyJp || '', productEn: product?.en || '', productJp: product?.jp || '' };
+        setFolderRows(prev => [newFolder, ...prev]);
+        db.create('folders', newFolder).then(saved => setFolderRows(prev => prev.map(f => f.id === newId ? { ...f, _awid: saved._awid } : f))).catch(dbErr);
+      }}
       onBack={() => { setShowAddCompany(false); setShowCompanies(true); }}
       onSave={(data) => {
         handleSaveCompany(data);
         setShowAddCompany(false);
         setShowCompanies(true);
+      }}
+      onDeletePR={(id, awid) => {
+        setPrRows(prev => prev.filter(p => p.id !== id));
+        if (awid) db.delete('pressReleases', awid).catch(dbErr);
+      }}
+      onUpdatePR={(updated) => {
+        setPrRows(prev => prev.map(p => p.id === updated.id ? updated : p));
+        if (updated._awid) {
+          const { _awid, ...rest } = updated;
+          db.update('pressReleases', _awid, rest).catch(dbErr);
+        }
+      }}
+      onSavePR={(prData) => {
+        const nextNum = (prRows.length + 1).toString().padStart(4, '0');
+        const newId = `local-pr-${Date.now()}`;
+        const newPR = {
+          id: newId,
+          refId: `pe${nextNum}`,
+          en: prData.titleEn || prData.title || '',
+          jp: prData.titleJp || prData.title || '',
+          date: prData.date || new Date().toISOString().slice(0, 10),
+          body: prData.body || '',
+          url: prData.url || '',
+        };
+        setPrRows(prev => [newPR, ...prev]);
+        db.create('pressReleases', newPR)
+          .then(saved => setPrRows(prev => prev.map(p => p.id === newId ? { ...p, _awid: saved._awid } : p)))
+          .catch(dbErr);
       }}
     />
   );

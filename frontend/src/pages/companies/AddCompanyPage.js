@@ -1,23 +1,14 @@
 import { useState } from 'react';
 import { getFormFields } from '../../data';
 import translations from '../../translations';
+import Sidebar from '../../components/Sidebar';
 import './CompaniesPage.css';
 import '../../components/modals.css';
 
 export default function AddCompanyPage({
-  lang, user, folderRows, products, prRows,
-  onLogout, onNavigate, onSave, onToggleLang,
+  lang, user, companies, folderRows, fileRows, products, prRows,
+  onLogout, onNavigate, onSave, onToggleLang, onSavePR, onUpdatePR, onDeletePR, onCreateFolder,
 }) {
-  // Sidebar
-  const [collapsed,          setCollapsed]          = useState(false);
-  const [productsOpen,       setProductsOpen]       = useState(false);
-  const [foldersOpen,        setFoldersOpen]        = useState(false);
-  const [recentFoldersOpen,  setRecentFoldersOpen]  = useState(false);
-  const [recentFilesOpen,    setRecentFilesOpen]    = useState(false);
-  const [langOpen,           setLangOpen]           = useState(false);
-  const [showNewFolder,      setShowNewFolder]      = useState(false);
-  const [newFolderName,      setNewFolderName]      = useState('');
-  const [newFolderProduct,   setNewFolderProduct]   = useState('');
 
   // Form
   const [activeTab,   setActiveTab]   = useState(0);
@@ -31,14 +22,22 @@ export default function AddCompanyPage({
   const [prDate,      setPrDate]      = useState('');
   const [prBody,      setPrBody]      = useState('');
 
+  // Edit Press Release modal
+  const [editPR,      setEditPR]      = useState(null);
+  const [editTitle,   setEditTitle]   = useState('');
+  const [editDate,    setEditDate]    = useState('');
+
+  // View Press Release modal
+  const [viewPR,      setViewPR]      = useState(null);
+
+  // Delete Press Release modal
+  const [deletePR,    setDeletePR]    = useState(null);
+
   const t = translations[lang] || translations['en'];
   const formFields = getFormFields(t);
 
   const emptyForm = Object.fromEntries(formFields.map(f => [f.key, '']));
   const [formData, setFormData] = useState(emptyForm);
-
-  const displayName  = user?.name || user?.email?.split('@')[0] || 'User';
-  const displayEmail = user?.email || '';
 
   function setField(key, val) { setFormData(prev => ({ ...prev, [key]: val })); }
 
@@ -48,142 +47,20 @@ export default function AddCompanyPage({
     <div className="cp-layout">
 
       {/* ── Sidebar ── */}
-      <aside className={`cp-sidebar${collapsed ? ' cp-sidebar--collapsed' : ''}`}>
-
-        <div className="cp-sidebar-header">
-          {!collapsed && <span className="cp-sidebar-brand">ChatCND</span>}
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            style={{ cursor: 'pointer', flexShrink: 0 }} onClick={() => setCollapsed(c => !c)}>
-            <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/>
-          </svg>
-        </div>
-
-        {!collapsed && <div className="cp-section-label">{t.menu}</div>}
-
-        <nav className="cp-nav">
-          <button className="cp-nav-item" title={t.newChat} onClick={() => onNavigate('newChat')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-            {!collapsed && t.newChat}
-          </button>
-
-          <button className="cp-nav-item" title={t.newFolder} onClick={() => setShowNewFolder(true)}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-              <line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/>
-            </svg>
-            {!collapsed && t.newFolder}
-          </button>
-
-          <button className="cp-nav-item" title={t.notification} onClick={() => onNavigate('notification')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-              <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-            {!collapsed && t.notification}
-          </button>
-
-          <button className="cp-nav-item cp-nav-item--active" title={t.companies} onClick={() => onNavigate('companies')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 0-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>
-            </svg>
-            {!collapsed && t.companies}
-          </button>
-
-          <button className="cp-nav-item cp-nav-item--expand" title={t.products} onClick={() => !collapsed && setProductsOpen(o => !o)}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
-              </svg>
-              {!collapsed && t.products}
-            </span>
-            {!collapsed && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: productsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>}
-          </button>
-
-          <button className="cp-nav-item cp-nav-item--expand" title={t.folders} onClick={() => !collapsed && setFoldersOpen(o => !o)}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-              </svg>
-              {!collapsed && t.folders}
-            </span>
-            {!collapsed && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: foldersOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>}
-          </button>
-        </nav>
-
-        {!collapsed && <>
-          <button className="cp-section-label cp-section-label--btn" style={{ marginTop: 12 }} onClick={() => setRecentFoldersOpen(o => !o)}>
-            {t.recentFolders}
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', transform: recentFoldersOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-          {recentFoldersOpen && (
-            <div className="cp-folder-list">
-              {(folderRows || []).slice(0, 8).map((f, i) => (
-                <button key={i} className="cp-folder-item" onClick={() => onNavigate('folders')}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                  {lang === 'en' ? f.en : f.jp}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <button className="cp-section-label cp-section-label--btn" onClick={() => setRecentFilesOpen(o => !o)}>
-            {t.recentFiles}
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', transform: recentFilesOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-        </>}
-
-        <div className="cp-sidebar-footer">
-          {collapsed ? (
-            <>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              <div className="cp-user-avatar">{displayName[0]?.toUpperCase()}</div>
-            </>
-          ) : (
-            <>
-              <div className="cp-user-row">
-                <div className="cp-user-avatar">{displayName[0]?.toUpperCase()}</div>
-                <div className="cp-user-info">
-                  <div className="cp-user-name">{displayName}</div>
-                  <div className="cp-user-email">{displayEmail}</div>
-                </div>
-                <button className="cp-logout-btn" onClick={onLogout} title="Logout">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                </button>
-              </div>
-              <div className="cp-lang-row" style={{ position: 'relative' }}>
-                {langOpen && (
-                  <div className="cp-lang-dropdown">
-                    <button
-                      className={`cp-lang-option${lang === 'en' ? ' cp-lang-option--active' : ''}`}
-                      onClick={() => { if (lang !== 'en') onToggleLang?.(); setLangOpen(false); }}
-                    >
-                      <span className="cp-lang-badge">EN</span>{t.english}
-                      {lang === 'en' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                    </button>
-                    <button
-                      className={`cp-lang-option${lang === 'jp' ? ' cp-lang-option--active' : ''}`}
-                      onClick={() => { if (lang !== 'jp') onToggleLang?.(); setLangOpen(false); }}
-                    >
-                      <span className="cp-lang-badge">JP</span>{t.japanese}
-                      {lang === 'jp' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                    </button>
-                  </div>
-                )}
-                <button className="cp-lang-btn" onClick={() => setLangOpen(o => !o)}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                  <span>{lang === 'en' ? t.english : t.japanese}</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', transform: langOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-              </div>
-              <div className="cp-version">v1.2.0</div>
-            </>
-          )}
-        </div>
-      </aside>
+      <Sidebar
+        activePage="companies"
+        lang={lang}
+        user={user}
+        companies={companies}
+        products={products}
+        folderRows={folderRows}
+        fileRows={fileRows}
+        onNavigate={onNavigate}
+        onLogout={onLogout}
+        onToggleLang={onToggleLang}
+        onOpenFolder={() => onNavigate('folders')}
+        onCreateFolder={onCreateFolder}
+      />
 
       {/* ── Main ── */}
       <main className="acp-main">
@@ -238,7 +115,14 @@ export default function AddCompanyPage({
               {/* Footer */}
               <div className="acp-pr-form-footer">
                 <button className="acp-pr-back-btn" onClick={() => setShowAddPR(false)}>{t.backBtn}</button>
-                <button className="acp-pr-register-btn" onClick={() => setShowAddPR(false)}>{t.register}</button>
+                <button
+                  className="acp-pr-register-btn"
+                  onClick={() => {
+                    if (onSavePR) onSavePR({ titleEn: prTitle, titleJp: prTitle, date: prDate, body: prBody, url: prUrl });
+                    setPrTitle(''); setPrDate(''); setPrBody(''); setPrUrl('');
+                    setShowAddPR(false);
+                  }}
+                >{t.register}</button>
               </div>
 
             </div>
@@ -368,15 +252,16 @@ export default function AddCompanyPage({
 
           {activeTab === 1 && (
             <div className="acp-content">
-              <div className="acp-pr-card">
-                <div className="acp-pr-toolbar">
-                  <button className="acp-pr-add-btn" onClick={() => { setPrUrl(''); setPrTitle(''); setPrDate(''); setPrBody(''); setShowAddPR(true); }}>
+              <div className="pr-container">
+                {/* Toolbar */}
+                <div className="pr-toolbar">
+                  <button className="cp-add-btn" onClick={() => { setPrUrl(''); setPrTitle(''); setPrDate(''); setPrBody(''); setShowAddPR(true); }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                   </button>
-                  <div className="acp-pr-search-wrap">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <div className="cp-search-wrap">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c0c4d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     <input
-                      className="acp-pr-search"
+                      className="cp-search-input"
                       type="text"
                       placeholder={t.searchPlaceholder}
                       value={prSearch}
@@ -385,47 +270,49 @@ export default function AddCompanyPage({
                   </div>
                 </div>
 
-              <div className="acp-pr-table-wrap">
-                <table className="acp-pr-table">
-                  <thead>
-                    <tr>
-                      <th className="acp-pr-th">{t.refIdCol}</th>
-                      <th className="acp-pr-th">{t.date}</th>
-                      <th className="acp-pr-th">{t.prTitle}</th>
-                      <th className="acp-pr-th acp-pr-th--actions" />
-                    </tr>
-                  </thead>
-                  <tbody>
+                {/* Table */}
+                <div className="cp-table-card">
+                  <div className="pr-thead">
+                    <div className="pr-th pr-col-id">{t.refIdCol}</div>
+                    <div className="pr-th pr-col-date">{t.date}</div>
+                    <div className="pr-th pr-col-title">{t.prTitle}</div>
+                    <div className="pr-th pr-col-action" />
+                  </div>
+                  <div className="pr-tbody">
                     {(prRows || [])
                       .filter(r => {
                         const q = prSearch.toLowerCase();
                         return !q || (r.en || '').toLowerCase().includes(q) || (r.refId || '').toLowerCase().includes(q);
                       })
                       .map(r => (
-                        <tr key={r.id} className="acp-pr-tr">
-                          <td className="acp-pr-td acp-pr-td--ref">{r.refId}</td>
-                          <td className="acp-pr-td">{r.date}</td>
-                          <td className="acp-pr-td acp-pr-td--title">{lang === 'en' ? r.en : (r.jp || r.en)}</td>
-                          <td className="acp-pr-td acp-pr-td--actions">
-                            {/* View */}
-                            <button className="acp-pr-action" title="View">
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <div key={r.id} className="pr-row">
+                          <div className="pr-cell pr-col-id pr-cell-id">
+                            <span className="pr-refid-text">{r.refId}</span>
+                            <button className="pr-copy-btn" title="Copy Ref ID" onClick={() => { navigator.clipboard?.writeText(r.refId); }}>
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                             </button>
-                            {/* Edit */}
-                            <button className="acp-pr-action" title="Edit">
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                          </div>
+                          <div className="pr-cell pr-col-date pr-cell-date">{r.date}</div>
+                          <div className="pr-cell pr-col-title pr-cell-title">{lang === 'en' ? r.en : (r.jp || r.en)}</div>
+                          <div className="pr-cell pr-col-action pr-cell-action">
+                            <button className="cp-icon-btn cp-icon-btn--view" title="View" onClick={() => setViewPR(r)}>
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                             </button>
-                            {/* Delete */}
-                            <button className="acp-pr-action" title="Delete">
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                            <button className="cp-icon-btn cp-icon-btn--edit" title="Edit" onClick={() => { setEditPR(r); setEditTitle(lang === 'en' ? r.en : (r.jp || r.en)); setEditDate(r.date || ''); }}>
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
                             </button>
-                          </td>
-                        </tr>
+                            <button className="cp-icon-btn cp-icon-btn--delete" title="Delete" onClick={() => setDeletePR(r)}>
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+                            </button>
+                          </div>
+                        </div>
                       ))}
-                  </tbody>
-                </table>
+                    {(prRows || []).length === 0 && (
+                      <div className="pr-empty">No press releases found.</div>
+                    )}
+                  </div>
+                </div>
               </div>
-              </div>{/* acp-pr-card */}
             </div>
           )}
         </div>
@@ -434,41 +321,109 @@ export default function AddCompanyPage({
 
       </main>
 
-      {/* ── New Folder Modal ── */}
-      {showNewFolder && (
-        <div className="np-modal-backdrop" onClick={() => setShowNewFolder(false)}>
-          <div className="np-modal" onClick={e => e.stopPropagation()}>
-            <div className="np-modal-header">
-              <span className="np-modal-title">{t.newFolder}</span>
-              <button className="np-modal-close" onClick={() => setShowNewFolder(false)}>
+      {/* ── Delete Press Release Modal ── */}
+      {deletePR && (
+        <div className="del-backdrop" onClick={() => setDeletePR(null)}>
+          <div className="del-modal" onClick={e => e.stopPropagation()}>
+            <div className="del-modal-header">
+              <div className="del-modal-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
+              <div className="del-modal-titles">
+                <div className="del-modal-title">Delete</div>
+                <div className="del-modal-subtitle">Confirm this action</div>
+              </div>
+              <button className="del-modal-close" onClick={() => setDeletePR(null)}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
-            <div className="np-modal-body">
-              <div className="np-modal-field">
-                <label className="np-modal-label">{t.product}</label>
-                <div className="np-modal-select-wrap">
-                  <select className="np-modal-select" value={newFolderProduct} onChange={e => setNewFolderProduct(e.target.value)}>
-                    <option value="">{t.selectProduct}</option>
-                    {(products || []).map((p, i) => (
-                      <option key={i} value={p._awid || p.id}>{lang === 'en' ? p.en : (p.jp || p.en)}</option>
-                    ))}
-                  </select>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9098a9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="np-modal-select-arrow"><polyline points="6 9 12 15 18 9"/></svg>
-                </div>
-              </div>
-              <div className="np-modal-field">
-                <label className="np-modal-label">{t.folderName}</label>
-                <input className="np-modal-input" placeholder="e.g. Spring Campaign 2026" value={newFolderName} onChange={e => setNewFolderName(e.target.value)} autoFocus />
-              </div>
+            <div className="del-modal-body">
+              <p className="del-modal-text">Are you sure you want to delete this item?</p>
+              <p className="del-modal-warning">This action cannot be undone.</p>
             </div>
-            <div className="np-modal-footer">
-              <button className="np-modal-cancel" onClick={() => setShowNewFolder(false)}>{t.cancel}</button>
-              <button className="np-modal-create" onClick={() => { setShowNewFolder(false); setNewFolderName(''); setNewFolderProduct(''); }}>{t.createFolder}</button>
+            <div className="del-modal-footer">
+              <button className="del-modal-cancel" onClick={() => setDeletePR(null)}>Cancel</button>
+              <button className="del-modal-confirm" onClick={() => {
+                if (onDeletePR) onDeletePR(deletePR.id, deletePR._awid);
+                setDeletePR(null);
+              }}>Delete</button>
             </div>
           </div>
         </div>
       )}
+
+      {/* ── View Press Release Modal ── */}
+      {viewPR && (
+        <div className="ed-backdrop" onClick={() => setViewPR(null)}>
+          <div className="ed-modal" style={{ maxWidth: 560 }} onClick={e => e.stopPropagation()}>
+            <div className="ed-modal-header">
+              <span className="ed-modal-title">View Press Release</span>
+              <button className="ed-modal-close" onClick={() => setViewPR(null)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div className="ed-modal-body" style={{ flex: 'none' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div className="ed-field">
+                  <label className="ed-label">Ref ID</label>
+                  <input className="ed-input" value={viewPR.refId} readOnly style={{ background: '#f5f6fa', color: '#9098a9' }} />
+                </div>
+                <div className="ed-field">
+                  <label className="ed-label">Release Date</label>
+                  <input className="ed-input" value={viewPR.date || ''} readOnly style={{ background: '#f5f6fa', color: '#9098a9' }} />
+                </div>
+              </div>
+              <div className="ed-field">
+                <label className="ed-label">Title</label>
+                <input className="ed-input" value={lang === 'en' ? viewPR.en : (viewPR.jp || viewPR.en)} readOnly style={{ background: '#f5f6fa', color: '#9098a9' }} />
+              </div>
+              <div className="ed-modal-footer">
+                <button className="ed-cancel" onClick={() => setViewPR(null)}>Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit Press Release Modal ── */}
+      {editPR && (
+        <div className="ed-backdrop" onClick={() => setEditPR(null)}>
+          <div className="ed-modal" style={{ maxWidth: 560 }} onClick={e => e.stopPropagation()}>
+            <div className="ed-modal-header">
+              <span className="ed-modal-title">Edit Press Release</span>
+              <button className="ed-modal-close" onClick={() => setEditPR(null)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div className="ed-modal-body" style={{ flex: 'none' }}>
+              <div className="ed-field">
+                <label className="ed-label">Ref ID</label>
+                <input className="ed-input" value={editPR.refId} readOnly style={{ background: '#f5f6fa', color: '#9098a9' }} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div className="ed-field">
+                  <label className="ed-label">Release Date</label>
+                  <input className="ed-input" type="date" value={editDate} onChange={e => setEditDate(e.target.value)} />
+                </div>
+                <div className="ed-field">
+                  <label className="ed-label">Title</label>
+                  <input className="ed-input" value={editTitle} onChange={e => setEditTitle(e.target.value)} />
+                </div>
+              </div>
+              <div className="ed-modal-footer">
+                <button className="ed-cancel" onClick={() => setEditPR(null)}>Cancel</button>
+                <button className="ed-save" onClick={() => {
+                  if (onUpdatePR) onUpdatePR({ ...editPR, en: editTitle, jp: editTitle, date: editDate });
+                  setEditPR(null);
+                }}>Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
 
     </div>
   );

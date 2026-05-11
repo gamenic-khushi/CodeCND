@@ -79,5 +79,24 @@ Use bullet points and clear formatting when explaining topics.`;
     }
   }
 
+  // POST /image
+  if (path === '/image' && method === 'POST') {
+    const { prompt } = body;
+    if (!prompt) return res.json({ error: 'No prompt provided' }, 400);
+    try {
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      const r = await openai.images.generate({
+        model: 'dall-e-3',
+        prompt,
+        n: 1,
+        size: '1024x1024',
+      });
+      return res.json({ url: r.data[0].url });
+    } catch (err) {
+      error('Image error: ' + err.message);
+      return res.json({ error: err.message || 'Image generation failed' }, 500);
+    }
+  }
+
   return res.json({ error: 'Not found' }, 404);
 };

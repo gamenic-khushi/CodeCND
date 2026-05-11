@@ -5,6 +5,30 @@ import Sidebar from '../../components/Sidebar';
 import './NewChatPage.css';
 import '../../components/modals.css';
 
+const OPENAI_KEY = process.env.REACT_APP_OPENAI_API_KEY;
+
+async function openaiChat(messages, model) {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_KEY}` },
+    body: JSON.stringify({ model: model === 'OpenAI' ? 'gpt-4o' : 'gpt-4o', max_tokens: 4096, messages }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || 'OpenAI error');
+  return data.choices[0].message.content;
+}
+
+async function openaiImage(prompt) {
+  const res = await fetch('https://api.openai.com/v1/images/generations', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_KEY}` },
+    body: JSON.stringify({ model: 'dall-e-3', prompt, n: 1, size: '1024x1024' }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || 'Image generation error');
+  return data.data[0].url;
+}
+
 const MODELS = [
   {
     id: 'OpenAI',
@@ -91,53 +115,66 @@ export default function NewChatPage({ lang, user, folders, companies, products =
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  function handleSparkleGenerate() {
+  async function handleSparkleGenerate() {
     if (!prompt.trim() || isGenerating) return;
     setIsGenerating(true);
-    setGeneratedContent('');
-    setTimeout(() => {
-      setGeneratedContent(FIXED_REPLY);
+    setPromptTab('generationLogs');
+    try {
+      const url = await openaiImage(prompt.trim());
+      setChatMessages(prev => [...prev,
+        { role: 'user', content: prompt.trim() },
+        { role: 'assistant', model, content: `__IMAGE__${url}` },
+      ]);
+    } catch (err) {
+      setChatMessages(prev => [...prev,
+        { role: 'user', content: prompt.trim() },
+        { role: 'assistant', model, content: 'Error: ' + err.message },
+      ]);
+    } finally {
       setIsGenerating(false);
-    }, 800);
+      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+    }
   }
 
-  const FIXED_REPLY = 'Understood. Let me check on your question. Please wait a moment.';
-
-  function handleChatSend() {
+  async function handleChatSend() {
     const text = chatInput.trim();
     if (!text || chatLoading) return;
-    setChatMessages(prev => [...prev, { role: 'user', content: text }]);
+    const updated = [...chatMessages, { role: 'user', content: text }];
+    setChatMessages(updated);
     setChatInput('');
     setChatLoading(true);
     setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
-    setTimeout(() => {
-      setChatMessages(prev => [...prev, { role: 'assistant', model, content: FIXED_REPLY }]);
+    try {
+      const reply = await openaiChat(updated.map(m => ({ role: m.role, content: m.content })), model);
+      setChatMessages(prev => [...prev, { role: 'assistant', model, content: reply }]);
+    } catch (err) {
+      setChatMessages(prev => [...prev, { role: 'assistant', model, content: 'Error: ' + err.message }]);
+    } finally {
       setChatLoading(false);
       setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
-    }, 800);
+    }
   }
 
-  function handleGenerate() {
-    const text = 'Generate a proposal based on the provided materials.';
-    setChatMessages(prev => [...prev, { role: 'user', content: text }]);
+  async function handleGenerate() {
+    if (!prompt.trim() || chatLoading) return;
+    const updated = [...chatMessages, { role: 'user', content: prompt.trim() }];
+    setChatMessages(updated);
     setChatLoading(true);
+    setPromptTab('generationLogs');
     setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
-    setTimeout(() => {
-      setChatMessages(prev => [...prev, { role: 'assistant', model, content: FIXED_REPLY }]);
+    try {
+      const reply = await openaiChat(updated.map(m => ({ role: m.role, content: m.content })), model);
+      setChatMessages(prev => [...prev, { role: 'assistant', model, content: reply }]);
+    } catch (err) {
+      setChatMessages(prev => [...prev, { role: 'assistant', model, content: 'Error: ' + err.message }]);
+    } finally {
       setChatLoading(false);
       setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
-    }, 800);
+    }
   }
 
   function handleOpenGenLog() {
-    setShowGenLogModal(true);
-    if (!prompt.trim()) return;
-    setGenLogLoading(true);
-    setGenLogReply('');
-    setTimeout(() => {
-      setGenLogReply(FIXED_REPLY);
-      setGenLogLoading(false);
-    }, 800);
+    setPromptTab('generationLogs');
   }
 
   const selectedModelObj = MODELS.find(m => m.id === model) || MODELS[0];
@@ -361,20 +398,28 @@ export default function NewChatPage({ lang, user, folders, companies, products =
                 />
               ) : (
                 <div className="ncp-genlog-tab-body">
-                  {!prompt.trim() ? (
-                    <div className="ncp-genlog-empty">{t.noMessagesYet}</div>
+                  {chatMessages.length === 0 && !chatLoading ? (
+                    <div className="ncp-genlog-empty">{t.noMessagesYet || 'No messages yet'}</div>
                   ) : (
                     <>
-                      <div className="ncp-genlog-section">
-                        <div className="ncp-genlog-label">{t.you}</div>
-                        <div className="ncp-genlog-user-bubble">{prompt}</div>
-                      </div>
-                      <div className="ncp-genlog-section">
-                        <div className="ncp-genlog-label">{t.assistantLabel}</div>
-                        <div className="ncp-genlog-assistant-bubble">
-                          {genLogLoading ? 'Generating…' : genLogReply}
+                      {chatMessages.map((m, i) => (
+                        <div key={i} className="ncp-genlog-section">
+                          <div className={`ncp-genlog-label ncp-genlog-label--${m.role}`}>
+                            {m.role === 'user' ? 'YOU' : 'AI'}
+                          </div>
+                          {m.content.startsWith('__IMAGE__') ? (
+                            <img src={m.content.replace('__IMAGE__', '')} alt="Generated" style={{ maxWidth: '100%', borderRadius: 8, marginTop: 4 }} />
+                          ) : (
+                            <div className={`ncp-genlog-${m.role === 'user' ? 'user' : 'assistant'}-bubble`}>{m.content}</div>
+                          )}
                         </div>
-                      </div>
+                      ))}
+                      {chatLoading && (
+                        <div className="ncp-genlog-section">
+                          <div className="ncp-genlog-label ncp-genlog-label--assistant">AI</div>
+                          <div className="ncp-genlog-assistant-bubble ncp-genlog-assistant-bubble--loading">Generating…</div>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
@@ -399,7 +444,10 @@ export default function NewChatPage({ lang, user, folders, companies, products =
                       }
                     </div>
                   )}
-                  <div className="ncp-msg-bubble">{m.content}</div>
+                  {m.content.startsWith('__IMAGE__')
+                    ? <img src={m.content.replace('__IMAGE__', '')} alt="Generated" className="ncp-msg-image" />
+                    : <div className="ncp-msg-bubble">{m.content}</div>
+                  }
                 </div>
               ))}
               {chatLoading && (
@@ -505,8 +553,8 @@ export default function NewChatPage({ lang, user, folders, companies, products =
                   </svg>
                 </button>
               </div>
-              <button className="ncp-generate-btn" onClick={handleGenerate} disabled={chatLoading}>{t.generate}</button>
-              <button className="ncp-sparkle-btn" onClick={handleSparkleGenerate} title="Generate from prompt" disabled={isGenerating}>
+              <button className="ncp-generate-btn" onClick={handleGenerate} disabled={chatLoading || !prompt.trim()}>{t.generate}</button>
+              <button className="ncp-sparkle-btn" onClick={handleSparkleGenerate} title="Generate image from prompt" disabled={isGenerating || !prompt.trim()}>
                 <svg width="18" height="18" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="0.9375" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6.88566 1.75878C6.91244 1.61541 6.98852 1.48592 7.10072 1.39273C7.21292 1.29955 7.35418 1.24854 7.50003 1.24854C7.64588 1.24854 7.78714 1.29955 7.89935 1.39273C8.01155 1.48592 8.08763 1.61541 8.11441 1.75878L8.77128 5.23253C8.81794 5.4795 8.93795 5.70667 9.11568 5.88439C9.2934 6.06211 9.52056 6.18213 9.76753 6.22878L13.2413 6.88566C13.3847 6.91244 13.5141 6.98852 13.6073 7.10072C13.7005 7.21292 13.7515 7.35418 13.7515 7.50003C13.7515 7.64588 13.7005 7.78714 13.6073 7.89935C13.5141 8.01155 13.3847 8.08763 13.2413 8.11441L9.76753 8.77128C9.52056 8.81794 9.2934 8.93795 9.11568 9.11568C8.93795 9.2934 8.81794 9.52056 8.77128 9.76753L8.11441 13.2413C8.08763 13.3847 8.01155 13.5141 7.89935 13.6073C7.78714 13.7005 7.64588 13.7515 7.50003 13.7515C7.35418 13.7515 7.21292 13.7005 7.10072 13.6073C6.98852 13.5141 6.91244 13.3847 6.88566 13.2413L6.22878 9.76753C6.18213 9.52056 6.06211 9.2934 5.88439 9.11568C5.70667 8.93795 5.4795 8.81794 5.23253 8.77128L1.75878 8.11441C1.61541 8.08763 1.48592 8.01155 1.39273 7.89935C1.29955 7.78714 1.24854 7.64588 1.24854 7.50003C1.24854 7.35418 1.29955 7.21292 1.39273 7.10072C1.48592 6.98852 1.61541 6.91244 1.75878 6.88566L5.23253 6.22878C5.4795 6.18213 5.70667 6.06211 5.88439 5.88439C6.06211 5.70667 6.18213 5.4795 6.22878 5.23253L6.88566 1.75878Z"/>
                   <path d="M12.5 1.25V3.75"/>
@@ -532,15 +580,6 @@ export default function NewChatPage({ lang, user, folders, companies, products =
               </button>
             </div>
 
-            {/* Generated output */}
-            {(isGenerating || generatedContent) && (
-              <div className="ncp-generated-output">
-                {isGenerating
-                  ? <div className="ncp-generated-loading">Generating…</div>
-                  : <pre className="ncp-generated-pre">{generatedContent}</pre>
-                }
-              </div>
-            )}
 
           </div>
         </div>

@@ -6,12 +6,12 @@
 .cp-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #fff; }
 .cp-main-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 28px 14px; border-bottom: 1px solid #ebebf0; flex-shrink: 0; }
 .cp-header-left { display: flex; align-items: center; gap: 12px; }
-.cp-main-title { font-size: 20px; font-weight: 700; color: #18192a; margin: 0; }
-.cp-add-btn { width: 34px; height: 34px; border-radius: 8px; background: #6366f1; color: #fff; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+.cp-main-title { font-size: 20px; font-weight: 700; color: #6366f1; margin: 0; }
+.cp-add-btn { width: 34px; height: 34px; border-radius: 6px; background: #6366f1; color: #fff; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
 .cp-add-btn:hover { background: #5254cc; }
-.cp-filter-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: #fff; border: 1.5px solid #d1d5db; border-radius: 20px; font-size: 13px; font-weight: 500; color: #374151; }
-.cp-filter-chip svg { color: #6b7280; flex-shrink: 0; }
-.cp-filter-chip-x { background: none; border: none; cursor: pointer; color: #9098a9; font-size: 15px; line-height: 1; padding: 0 0 0 4px; }
+.cp-filter-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; background: #fff; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 13px; font-weight: 500; color: #374151; }
+.cp-filter-chip svg { flex-shrink: 0; }
+.cp-filter-chip-x { background: none; border: none; cursor: pointer; color: #9098a9; font-size: 16px; line-height: 1; padding: 0 0 0 6px; margin-left: 2px; }
 .cp-search-wrap { display: flex; align-items: center; gap: 8px; border: 1px solid #e4e6ef; border-radius: 8px; padding: 7px 14px; background: #fff; width: 240px; }
 .cp-search-input { border: none; outline: none; font-size: 13px; color: #3d4252; background: transparent; width: 100%; }
 .cp-search-input::placeholder { color: #c0c4d0; }
