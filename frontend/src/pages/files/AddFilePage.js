@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import translations from '../../translations';
-import { CompanyIcon, ProductIcon, FolderIcon, FileIcon, ChatIcon } from '../../icons';
+import { CompanyIcon, ProductIcon, FolderIcon, ChatIcon } from '../../icons';
 import '../companies/CompaniesPage.css';
 import '../chat/MatrixGenerationPage.css';
 import '../folders/FolderDetailPage.css';

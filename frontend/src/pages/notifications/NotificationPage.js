@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import translations from '../../translations';
 import Sidebar from '../../components/Sidebar';
 import './NotificationPage.css';

@@ -86,7 +86,6 @@ export default function NewChatPage({ lang, user, folders, companies, products =
   const chatEndRef                        = useRef(null);
 
   // Sparkle generate output
-  const [generatedContent, setGeneratedContent] = useState('');
   const [isGenerating,     setIsGenerating]     = useState(false);
 
   // Prompt / Generation Logs tab
@@ -94,8 +93,6 @@ export default function NewChatPage({ lang, user, folders, companies, products =
 
   // Generate Log modal
   const [showGenLogModal, setShowGenLogModal] = useState(false);
-  const [genLogLoading,   setGenLogLoading]   = useState(false);
-  const [genLogReply,     setGenLogReply]     = useState('');
 
   // Folder drill-down dropdown
   const [folderDropOpen,  setFolderDropOpen]  = useState(false);
@@ -613,7 +610,7 @@ export default function NewChatPage({ lang, user, folders, companies, products =
                   <div className="ncp-genlog-section">
                     <div className="ncp-genlog-label">{t.assistantLabel}</div>
                     <div className="ncp-genlog-assistant-bubble">
-                      {genLogLoading ? 'Generating…' : genLogReply}
+                      {'Generating…'}
                     </div>
                   </div>
                 </>

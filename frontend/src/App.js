@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 import translations from './translations';
-import { INITIAL_FILE_ROWS, INITIAL_PR_ROWS, INITIAL_PRODUCTS, INITIAL_FOLDERS, EMPTY_FORM } from './data';
+import { EMPTY_FORM } from './data';
 
 import { db, auth, fn } from './appwrite';
 import LoginPage from './pages/auth/LoginPage';

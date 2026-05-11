@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import translations from '../../translations';
-import { CompanyIcon, ProductIcon, FolderIcon } from '../../icons';
+import { CompanyIcon, ProductIcon } from '../../icons';
 import Sidebar from '../../components/Sidebar';
 import '../companies/CompaniesPage.css';
 import '../../components/modals.css';
